@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A year of web attacks reaching Japan, drawn as light on a world map.">
+<meta property="og:title" content="Attacker Constellation">
+<meta property="og:description" content="A year of web attacks reaching Japan, drawn as light on a world map.">
+<meta name="theme-color" content="#050913">
+<title>Attacker Constellation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@300;400&family=Zen+Kaku+Gothic+New:wght@400;700&family=Noto+Color+Emoji&display=swap">
+<style>
+/* 一枚の夜空: 全画面の世界地図に、攻撃元から日本へ流れる光。文字は題と凡例だけ（暗い一色の見た目に固定） */
+:root {
+  color-scheme: dark;
+  --bg: #050913; --sea: #070d1b; --land: #111a2b; --edge: #1d2a42; --grat: #0c1526;
+  --fg: #dfe7f4; --muted: #7b88a3; --violet: #c9a8ff;
+  --probe: #9fc8ff; --exploit: #ff4fa8; --sqli: #ffbe5c; --shell: #b388ff; --bot: #4cc9f0;
+  --font-display: "Martian Mono", "SFMono-Regular", "Menlo", "Consolas", monospace;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+  --font-flag: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); overflow: hidden; cursor: default; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.brand { position: fixed; left: clamp(16px, 1.6vw, 40px); top: calc(env(safe-area-inset-top, 0px) + clamp(12px, 1.4vw, 34px)); pointer-events: none; }
+.brand h1 { margin: 0; font-family: var(--font-display); font-weight: 300; font-size: clamp(1rem, 1.9vw, 2.6rem); letter-spacing: .26em; line-height: 1.1; color: var(--fg); text-shadow: 0 2px 14px var(--bg); }
+.brand time { display: block; margin-top: .55em; font-family: var(--font-display); font-weight: 300; font-size: clamp(1.4rem, 2.6vw, 3.6rem); letter-spacing: .08em; color: var(--fg); font-variant-numeric: tabular-nums; text-shadow: 0 2px 14px var(--bg); }
+.brand p { margin: .5em 0 0; font-family: var(--font-display); font-size: clamp(.55rem, .78vw, 1.05rem); letter-spacing: .42em; color: var(--violet); }
+.legend { font-family: var(--font-display); letter-spacing: .06em; position: fixed; right: clamp(16px, 1.6vw, 40px); top: calc(env(safe-area-inset-top, 0px) + clamp(14px, 1.5vw, 36px)); display: flex; gap: 1.4em; font-size: clamp(.62rem, .82vw, 1.1rem); color: var(--muted); pointer-events: none; flex-wrap: wrap; justify-content: flex-end; max-width: 60vw; }
+.legend span { display: inline-flex; align-items: center; gap: .5em; white-space: nowrap; }
+.legend i.ln { width: 1.4em; height: 2px; border-radius: 1px; background: linear-gradient(90deg, #5eead4, #a78bfa, #facc15); box-shadow: none; }
+.legend i { width: .62em; height: .62em; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px currentColor; }
+.graph { position: fixed; right: clamp(16px, 1.6vw, 40px); bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(14px, 1.6vw, 40px)); width: clamp(220px, 24vw, 700px); pointer-events: none; }
+.graph canvas { display: block; width: 100%; height: clamp(54px, 7vh, 140px); }
+.graph div { font-size: clamp(.55rem, .7vw, .95rem); color: var(--muted); letter-spacing: .08em; margin-top: .4em; text-align: right; }
+.cap { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(16px, 2vw, 48px)); transform: translateX(-50%); width: min(36vw, 1000px); text-align: center; pointer-events: none;
+  padding: .4em 1em .6em; border-radius: 8px; background: color-mix(in srgb, var(--bg) 78%, transparent); animation: capIn 7s ease forwards; }
+.cap b { display: block; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.1rem, 1.9vw, 2.6rem); letter-spacing: .14em; color: var(--bot); text-shadow: 0 0 26px color-mix(in srgb, var(--bot) 60%, transparent); }
+.cap .fl { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 .3em; margin-top: .3em; font-family: var(--font-flag); line-height: 1.08; }
+@keyframes capIn { 0% { opacity: 0; transform: translate(-50%, 12px); } 8% { opacity: 1; transform: translate(-50%, 0); } 88% { opacity: 1; } 100% { opacity: 0; } }
+.intro { position: fixed; inset: 0; z-index: 10; background: var(--bg); display: grid; place-items: center; text-align: center; transition: opacity 1s ease; overflow: hidden; }
+.intro.out { opacity: 0; pointer-events: none; }
+.intro h2 { margin: 0 -.3em 0 0; font-family: var(--font-display); font-weight: 300; font-size: clamp(1.6rem, 4.4vw, 6.4rem); color: var(--fg); letter-spacing: 1em; filter: blur(10px); white-space: nowrap;
+  transition: letter-spacing 2.6s cubic-bezier(.16, .84, .24, 1), filter 1.6s ease; }
+.intro p { margin: 1.6em 0 0; font-family: var(--font-display); font-size: clamp(.7rem, 1.2vw, 1.7rem); letter-spacing: .5em; color: var(--violet); opacity: 0; transition: opacity 1.4s ease .8s; }
+.intro.on h2 { letter-spacing: .3em; filter: none; } .intro.on p { opacity: 1; }
+.err { position: fixed; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 1rem; padding-inline: 16px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .intro h2 { transition: none; letter-spacing: .3em; filter: none; } .cap { animation: none; } }
+@media (max-aspect-ratio: 9/10) {
+  .brand { left: 0; right: 0; text-align: center; top: calc(env(safe-area-inset-top, 0px) + 22px); }
+  .brand h1 { font-size: clamp(1rem, 5.4vw, 2.4rem); letter-spacing: .18em; } .brand time { font-size: clamp(1.3rem, 7vw, 2.6rem); margin-top: .35em; } .brand p { font-size: clamp(.55rem, 2.4vw, 1rem); letter-spacing: .36em; }
+  .legend { top: auto; left: 16px; right: 16px; max-width: none; justify-content: center; gap: 1em; font-size: clamp(.62rem, 2.8vw, 1rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
+  .graph { left: 16px; right: 16px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); } .graph canvas { height: clamp(44px, 7vh, 110px); }
+  .cap { width: calc(100vw - 32px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18vh); }
+  .cap b { font-size: clamp(1.2rem, 6.5vw, 2.4rem); }
+  .intro h2 { font-size: clamp(1.1rem, 6vw, 3rem); letter-spacing: .6em; white-space: normal; } .intro.on h2 { letter-spacing: .2em; }
+}
+</style>
+
+</head>
+<body>
+<div id="stage"><canvas id="base" aria-hidden="true"></canvas><canvas id="glow" aria-hidden="true"></canvas><canvas id="fx" role="img" aria-label="世界の攻撃元から日本へ向かう攻撃とボットの流れ"></canvas></div>
+<header class="brand"><h1>ATTACKER CONSTELLATION</h1><p>HIGH DENSITY INTELLIGENCE</p><time id="mon"></time></header>
+<div class="legend"><span style="color:var(--probe)"><i style="background:var(--probe)"></i>Probe</span><span style="color:var(--exploit)"><i style="background:var(--exploit)"></i>Exploit</span><span style="color:var(--sqli)"><i style="background:var(--sqli)"></i>SQLi</span><span style="color:var(--shell)"><i style="background:var(--shell)"></i>Web shell</span><span style="color:var(--bot)"><i style="background:var(--bot)"></i>Bot</span><span style="color:var(--fg)"><i class="ln"></i>Attack group</span></div>
+<div class="graph"><canvas id="g" aria-hidden="true"></canvas><div>HOURLY ACTIVITY</div></div>
+<div class="intro" id="intro"><div><h2>ATTACKER CONSTELLATION</h2><p>HIGH DENSITY INTELLIGENCE</p></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+(async () => {
+const DAY_MS = 1000, HOUR_MS = DAY_MS / 24;          // 1 日 = 1 秒（1 年で約 6 分）
+const TARGET = [139.69, 35.69], CELL = 2;
+const COL = [[159, 200, 255], [255, 79, 168], [179, 136, 255], [255, 190, 92]], BOT = [76, 201, 240];
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let P, BIN, WORLD;
+try {
+  [P, WORLD] = await Promise.all([fetch("pub.json").then(r => r.json()), fetch("countries-110m.json").then(r => r.json())]);
+  BIN = Uint8Array.from(atob(P.rows), c => c.charCodeAt(0)).buffer;
+} catch (e) { document.body.insertAdjacentHTML("beforeend", `<div class="err">データを読み込めませんでした</div>`); return; }
+
+// 行: 時 (u16) ・格子 x (u8) ・格子 y (u8) ・種類 << 4 | 強さ (u8)
+const NR = BIN.byteLength / 5, dv = new DataView(BIN), RH = new Uint16Array(NR), RX = new Uint8Array(NR), RY = new Uint8Array(NR), RK = new Uint8Array(NR);
+for (let i = 0; i < NR; i++) { RH[i] = dv.getUint16(i * 5, true); RX[i] = dv.getUint8(i * 5 + 2); RY[i] = dv.getUint8(i * 5 + 3); RK[i] = dv.getUint8(i * 5 + 4); }
+const H = P.H, START = new Int32Array(H + 1);
+for (let i = 0, h = 0; h <= H; h++) { while (i < NR && RH[i] < h) i++; START[h] = i; }
+// 国ごと: 時 (u16)・国 (u8)・強さ (u8)。国の光と首都の光の柱
+const CB = Uint8Array.from(atob(P.crows), c => c.charCodeAt(0)), cdv = new DataView(CB.buffer), NC = CB.length / 4, NCT = P.countries.length;
+const CH = new Uint16Array(NC), CI = new Uint8Array(NC), CL = new Uint8Array(NC), CSTART = new Int32Array(H + 1);
+for (let i = 0; i < NC; i++) { CH[i] = cdv.getUint16(i * 4, true); CI[i] = cdv.getUint8(i * 4 + 2); CL[i] = cdv.getUint8(i * 4 + 3); }
+for (let i = 0, h = 0; h <= H; h++) { while (i < NC && CH[i] < h) i++; CSTART[h] = i; }
+const DECAY = Math.exp(-1 / 10), ACT = new Float32Array(NCT), SHOW = new Float32Array(NCT);
+const AMAX = (() => { const a = new Float32Array(NCT), v = []; for (let h = 0; h < H; h++) { for (let c = 0; c < NCT; c++) a[c] *= DECAY; for (let i = CSTART[h]; i < CSTART[h + 1]; i++) a[CI[i]] += 2 ** (CL[i] - 1); if (h % 6 === 0) for (let c = 0; c < NCT; c++) if (a[c] > .5) v.push(a[c]); } v.sort((x, y) => x - y); return v[Math.floor(v.length * .995)] || 1; })();
+// 攻撃グループ（推定）の星座: 動いている時だけ、メンバーの位置を線で結ぶ（同時に 8 つまで）
+const GR = P.groups || [], NG = GR.length, G_AT = Array.from({ length: H }, () => []), GA = new Float32Array(NG), GON = new Uint8Array(NG);
+GR.forEach((g, k) => { for (let i = 0; i < g.a.length; i += 2) for (let h = g.a[i]; h < Math.min(H, g.a[i] + g.a[i + 1]); h++) G_AT[h].push(k); });
+const GPAL = [[94, 234, 212], [163, 230, 53], [250, 204, 21], [244, 114, 182], [167, 139, 250], [96, 165, 250], [251, 146, 60], [52, 211, 153]];
+let GXY = [], GPATH = [];
+const BOTS = P.bots, BOT_AT = Array.from({ length: H }, () => []);
+BOTS.forEach((b, k) => { for (let o = 0; o < b.d; o++) if (b.s + o < H) BOT_AT[b.s + o].push([k, b.w[o]]); });
+const flag = c => String.fromCodePoint(...[...c].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65));
+
+const stage = document.getElementById("stage"), base = document.getElementById("base"), glowC = document.getElementById("glow"), fx = document.getElementById("fx"), gC = document.getElementById("g");
+const bctx = base.getContext("2d"), lctx = glowC.getContext("2d"), ctx = fx.getContext("2d"), gctx = gC.getContext("2d");
+const land = topojson.feature(WORLD, WORLD.objects.countries), borders = topojson.mesh(WORLD, WORLD.objects.countries, (a, b) => a !== b);
+let PORTRAIT = false, MAX_M = 5000, ROT = [-136, -28], C0 = [0, 0], W, Hh, DPR, proj, TX, TY, pathCache = new Map(), CPATH = [], CXY = [];
+const CFEAT = P.countries.map(([, lon, lat]) => land.features.find(f => d3.geoContains(f, [lon, lat])) || null);
+
+function layout() {
+  DPR = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; Hh = innerHeight;
+  for (const c of [base, glowC, fx]) { c.width = W * DPR; c.height = Hh * DPR; }
+  const m = Math.max(8, W * .01);
+  PORTRAIT = W < Hh * .9;   // 縦長（スマホ）は画面いっぱいの地球儀（アジア・太平洋が正面）
+  proj = PORTRAIT ? d3.geoOrthographic().rotate(ROT).translate([W / 2, Hh * .46]).scale(Math.min(W * .62, Hh * .4)).clipAngle(90)
+    : d3.geoEqualEarth().rotate([-150, 0]).fitExtent([[m, m], [W - m, Hh - m]], { type: "Sphere" });
+  MAX_M = PORTRAIT || W < 900 ? 1800 : 5000;
+  stage.style.touchAction = PORTRAIT ? "none" : "";
+  const gr = gC.getBoundingClientRect(); gC.width = gr.width * DPR; gC.height = gr.height * DPR; gctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  reproject();
+}
+function reproject() {   // 投影が変わったとき（大きさ・地球儀を回したとき）: 地図と、国・攻撃グループの位置を描き直す
+  if (PORTRAIT) proj.rotate(ROT);
+  const r = proj.rotate(); C0 = [-r[0] * Math.PI / 180, -r[1] * Math.PI / 180];
+  [TX, TY] = proj(TARGET);
+  bctx.setTransform(DPR, 0, 0, DPR, 0, 0); bctx.fillStyle = css("--bg"); bctx.fillRect(0, 0, W, Hh);
+  const gp = d3.geoPath(proj, bctx);
+  if (PORTRAIT) {   // 星と大気の光
+    let r = 7; const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 260; i++) { bctx.fillStyle = `rgba(200,215,255,${(.15 + rnd() * .5).toFixed(2)})`; bctx.fillRect(rnd() * W, rnd() * Hh, rnd() < .9 ? 1 : 1.6, rnd() < .9 ? 1 : 1.6); }
+    const [cx, cy] = proj.translate(), R0 = proj.scale(), at = bctx.createRadialGradient(cx, cy, R0 * .96, cx, cy, R0 * 1.14);
+    at.addColorStop(0, "rgba(90,130,255,.35)"); at.addColorStop(1, "rgba(90,130,255,0)"); bctx.fillStyle = at; bctx.beginPath(); bctx.arc(cx, cy, R0 * 1.14, 0, 6.283); bctx.fill();
+  }
+  bctx.beginPath(); gp({ type: "Sphere" }); bctx.fillStyle = css("--sea"); bctx.fill();
+  bctx.beginPath(); gp(d3.geoGraticule10()); bctx.strokeStyle = css("--grat"); bctx.lineWidth = 1; bctx.stroke();
+  bctx.beginPath(); gp(land); bctx.fillStyle = css("--land"); bctx.fill();
+  bctx.beginPath(); gp(borders); bctx.strokeStyle = css("--edge"); bctx.lineWidth = .8; bctx.stroke();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, Hh); lctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  GXY = GR.map(g => g.p.map(q => vis(q[0], q[1]) ? proj(q) : null));
+  const gpth = d3.geoPath(proj); GPATH = GR.map(g => new Path2D(gpth({ type: "MultiLineString", coordinates: g.e.map(([i, j]) => [g.p[i], g.p[j]]) }) || ""));   // 大円で結ぶ（地図の端・地球儀の裏で切る）
+  const sp = d3.geoPath(proj); CPATH = CFEAT.map(f => f ? new Path2D(sp(f)) : null); CXY = P.countries.map(([, lon, lat]) => vis(lon, lat) ? proj([lon, lat]) : null);
+}
+const D2R = Math.PI / 180;
+function vis(lon, lat) {   // 地球儀の表側か（平面の地図ではいつも真）
+  if (!PORTRAIT) return true;
+  const a = lat * D2R, b = C0[1];
+  return Math.sin(a) * Math.sin(b) + Math.cos(a) * Math.cos(b) * Math.cos(lon * D2R - C0[0]) > .03;
+}
+function arc(lon, lat) {   // 大円に沿って日本へ（経緯度・25 点。投影は描くたびに）
+  const k = Math.round(lon * 10) * 4000 + Math.round(lat * 10);
+  let a = pathCache.get(k); if (a) return a;
+  const it = d3.geoInterpolate([lon, lat], TARGET); a = new Float32Array(50);
+  for (let i = 0; i <= 24; i++) { const g = it(i / 24); a[2 * i] = g[0]; a[2 * i + 1] = g[1]; }
+  pathCache.set(k, a); return a;
+}
+const at = (a, t) => {
+  const f = Math.min(24, Math.max(0, t * 24)), i = Math.min(23, Math.floor(f)), u = f - i;
+  let l0 = a[2 * i], l1 = a[2 * i + 2]; if (l1 - l0 > 180) l1 -= 360; else if (l0 - l1 > 180) l1 += 360;
+  const lon = l0 + (l1 - l0) * u, lat = a[2 * i + 1] + (a[2 * i + 3] - a[2 * i + 1]) * u;
+  return vis(lon, lat) ? proj([lon, lat]) : null;
+};
+
+let meteors = [], sparks = [], glow = 0, hCur = -1, tAcc = 0, last = performance.now(), paused = true, hold = 0, capFor = -1;
+function spawnHour(h) {
+  for (let i = START[h]; i < START[h + 1]; i++) {
+    const k = RK[i] >> 4, lv = RK[i] & 15, n = lv >= 11 ? 3 : lv >= 7 ? 2 : 1;
+    for (let j = 0; j < n && meteors.length < MAX_M; j++) {
+      const lon = RX[i] * CELL - 180 + Math.random() * CELL, lat = RY[i] * CELL - 90 + Math.random() * CELL;
+      meteors.push({ a: arc(lon, lat), t: -Math.random() * .6, sp: .55 + Math.random() * .35, c: COL[k], s: .7 + lv * .12 + (k === 3 ? .8 : 0), al: k === 3 ? .95 : .35 + Math.min(.6, lv * .05) });   // SQLi は数が少ないので太く明るく
+    }
+  }
+  for (const [k, w] of BOT_AT[h]) {   // ボット: 国ごとの流れ（強さ × 国の割合）
+    for (const [, lvl, lon, lat] of BOTS[k].c) {
+      if (lon === null) continue;
+      const n = Math.round(w * lvl * .3 + (Math.random() < w * lvl * .3 % 1 ? 1 : 0));
+      for (let j = 0; j < n && meteors.length < MAX_M; j++)
+        meteors.push({ a: arc(lon + (Math.random() - .5) * 4, lat + (Math.random() - .5) * 3), t: -Math.random() * .5, sp: .8 + Math.random() * .4, c: BOT, s: .55, al: .32, bot: 1 });
+    }
+  }
+  const b = BOT_AT[h].find(([k]) => BOTS[k].s === h || (capFor < 0 && h === hStart && BOTS[k].s < h));
+  if (b) showCap(b[0]);
+  GON.fill(0); G_AT[h].slice().sort((a, b) => GR[b].p.length - GR[a].p.length).slice(0, 8).forEach(k => GON[k] = 1);
+  for (let c = 0; c < NCT; c++) ACT[c] *= DECAY;
+  for (let i = CSTART[h]; i < CSTART[h + 1]; i++) ACT[CI[i]] += 2 ** (CL[i] - 1);
+  glow = Math.max(glow * .85, P.atk[h] / 255);
+  const mo = (P.months || []).filter(x => x[0] <= h).pop(); if (mo && monEl.textContent !== mo[1]) monEl.textContent = mo[1];
+}
+let hStart = 0; const monEl = document.getElementById("mon");
+function showCap(k) {
+  capFor = k; document.querySelectorAll(".cap").forEach(e => e.remove());
+  const c = BOTS[k].c, el = document.createElement("div"); el.className = "cap";
+  const px = PORTRAIT ? Math.min(1, innerWidth / 1000) : Math.min(1, innerWidth / 2880);
+  el.innerHTML = `<b>BOT STORM</b><div class="fl">${c.map(([cc, l]) => `<span style="font-size:${Math.round((10 + l * 4) * px + 5)}px">${flag(cc)}</span>`).join("")}</div>`;
+  document.body.appendChild(el); setTimeout(() => el.remove(), 7100);
+}
+function draw(dt) {
+  ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.fillRect(0, 0, W, Hh);
+  ctx.globalCompositeOperation = "lighter";
+  const keep = [];
+  for (const m of meteors) {
+    m.t += dt * m.sp;
+    if (m.t <= 0) { keep.push(m); continue; }
+    if (m.t >= 1) { if (!m.bot && Math.random() < .25) sparks.push({ r: 4, a: .5 * m.al, c: m.c }); continue; }
+    const p = at(m.a, m.t), q = at(m.a, Math.max(0, m.t - .06));
+    if (!p || !q || Math.abs(p[0] - q[0]) > W * .3) { keep.push(m); continue; }
+    ctx.strokeStyle = `rgba(${m.c[0]},${m.c[1]},${m.c[2]},${m.al * .55})`; ctx.lineWidth = m.s;
+    ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
+    ctx.fillStyle = `rgba(${m.c[0]},${m.c[1]},${m.c[2]},${m.al})`; ctx.beginPath(); ctx.arc(p[0], p[1], m.s * 1.1, 0, 6.283); ctx.fill();
+    keep.push(m);
+  }
+  meteors = keep;
+  for (const s of (vis(TARGET[0], TARGET[1]) ? sparks : [])) { s.r += dt * 60; s.a -= dt * .9; if (s.a > 0) { ctx.strokeStyle = `rgba(${s.c[0]},${s.c[1]},${s.c[2]},${s.a})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(TX, TY, s.r, 0, 6.283); ctx.stroke(); } }
+  sparks = sparks.filter(s => s.a > 0).slice(-160);
+  // 日本: 攻撃の多い時間ほど明るく（地球儀の裏にあるときは描かない）
+  if (!vis(TARGET[0], TARGET[1])) { ctx.globalCompositeOperation = "source-over"; return; }
+  const R = Math.max(10, W * .012), gr = ctx.createRadialGradient(TX, TY, 0, TX, TY, R * (2.2 + glow * 2.5));
+  gr.addColorStop(0, `rgba(255,255,255,${.25 + glow * .5})`); gr.addColorStop(.25, `rgba(159,200,255,${.12 + glow * .3})`); gr.addColorStop(1, "rgba(159,200,255,0)");
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(TX, TY, R * (2.2 + glow * 2.5), 0, 6.283); ctx.fill();
+  ctx.globalCompositeOperation = "source-over";
+}
+function drawCountries(dt) {   // 国の光（送信の強さ）と首都の光の柱
+  lctx.clearRect(0, 0, W, Hh); lctx.globalCompositeOperation = "lighter";
+  const k = Math.min(1, dt * 6), Lmax = Math.log1p(AMAX), ph = (PORTRAIT ? Hh * .16 : Hh * .26);
+  for (let c = 0; c < NCT; c++) {
+    SHOW[c] += (Math.min(1, Math.log1p(ACT[c]) / Lmax) - SHOW[c]) * k;
+    const v = SHOW[c]; if (v < .03) continue;
+    if (CPATH[c]) { lctx.fillStyle = `rgba(118,150,255,${(v * .6).toFixed(3)})`; lctx.fill(CPATH[c]); lctx.strokeStyle = `rgba(170,195,255,${(v * .5).toFixed(3)})`; lctx.lineWidth = .8; lctx.stroke(CPATH[c]); }
+    const q = CXY[c]; if (!q) continue;
+    if (PORTRAIT && d3.geoDistance(P.countries[c].slice(1), [-proj.rotate()[0], -proj.rotate()[1]]) > 1.5) continue;
+    const x = q[0], y = q[1], hgt = 8 + Math.pow(v, 1.5) * ph, wd = 2 + v * 5;
+    const g = lctx.createLinearGradient(x, y, x, y - hgt);
+    g.addColorStop(0, `rgba(255,255,255,${(.45 + v * .55).toFixed(3)})`); g.addColorStop(.3, `rgba(160,195,255,${(.15 + v * .65).toFixed(3)})`); g.addColorStop(1, "rgba(150,190,255,0)");
+    lctx.fillStyle = g; lctx.fillRect(x - wd / 2, y - hgt, wd, hgt);
+    const bg = lctx.createLinearGradient(x, y, x, y - hgt * .7);
+    bg.addColorStop(0, `rgba(120,160,255,${(v * .3).toFixed(3)})`); bg.addColorStop(1, "rgba(120,160,255,0)");
+    lctx.fillStyle = bg; lctx.fillRect(x - wd * 3, y - hgt * .7, wd * 6, hgt * .7);
+    const rg = lctx.createRadialGradient(x, y, 0, x, y, 4 + v * 14); rg.addColorStop(0, `rgba(255,255,255,${(.3 + v * .5).toFixed(3)})`); rg.addColorStop(1, "rgba(150,190,255,0)");
+    lctx.fillStyle = rg; lctx.beginPath(); lctx.arc(x, y, 4 + v * 14, 0, 6.283); lctx.fill();
+  }
+  for (let k = 0; k < NG; k++) {   // 攻撃グループの星座
+    GA[k] += ((GON[k] ? 1 : 0) - GA[k]) * Math.min(1, dt * 3);
+    const a = GA[k]; if (a < .02) continue;
+    const c = GPAL[k % GPAL.length], xy = GXY[k];
+    for (const [w, al] of [[3.2, .12], [1.1, .6]]) {
+      lctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(al * a).toFixed(3)})`; lctx.lineWidth = w; lctx.stroke(GPATH[k]);
+    }
+    lctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(.95 * a).toFixed(3)})`;
+    for (const p of xy) { if (!p) continue; lctx.beginPath(); lctx.arc(p[0], p[1], 2.3, 0, 6.283); lctx.fill(); }
+  }
+  lctx.globalCompositeOperation = "source-over";
+}
+function drawGraph(h) {   // 直近 21 日の 1 時間ごとの増減（相対値・目盛りなし）
+  const w = gC.width / DPR, hh = gC.height / DPR, N = 504, x0 = h - N + 1;
+  gctx.clearRect(0, 0, w, hh);
+  gctx.fillStyle = "rgba(76,201,240,.35)"; gctx.beginPath(); gctx.moveTo(0, hh);
+  for (let i = 0; i < N; i++) { const v = x0 + i >= 0 ? P.bot[x0 + i] / 255 : 0; gctx.lineTo(i / (N - 1) * w, hh - v * hh * .95); }
+  gctx.lineTo(w, hh); gctx.closePath(); gctx.fill();
+  gctx.strokeStyle = "rgba(223,231,244,.85)"; gctx.lineWidth = 1.2; gctx.beginPath();
+  for (let i = 0; i < N; i++) { const v = x0 + i >= 0 ? Math.sqrt(P.atk[x0 + i] / 255) : 0, x = i / (N - 1) * w, y = hh - v * hh * .95; i ? gctx.lineTo(x, y) : gctx.moveTo(x, y); }
+  gctx.stroke();
+  gctx.fillStyle = "#fff"; const ve = Math.sqrt(P.atk[h] / 255); gctx.beginPath(); gctx.arc(w - 2, hh - ve * hh * .95, 2.5, 0, 6.283); gctx.fill();
+}
+function frame(now) {
+  const dt = Math.min(.1, (now - last) / 1000); last = now;
+  if (!paused) {
+    tAcc += dt * 1000;
+    while (tAcc >= HOUR_MS && hCur < H - 1) { tAcc -= HOUR_MS; hCur++; spawnHour(hCur); }
+    if (hCur >= H - 1 && (hold += dt) > 2.5) restart(false);
+    if (hCur >= 0) drawGraph(hCur);
+  }
+  if (Math.abs(spin[0]) + Math.abs(spin[1]) > .002 && !drag) { ROT = [ROT[0] + spin[0] * dt * 1000, Math.max(-85, Math.min(85, ROT[1] + spin[1] * dt * 1000))]; spin = spin.map(v => v * Math.pow(.05, dt)); dirty = true; }
+  if (dirty && PORTRAIT) { dirty = false; reproject(); }
+  drawCountries(dt); draw(dt);
+  requestAnimationFrame(frame);
+}
+const intro = document.getElementById("intro");
+function playIntro(full, done) {
+  intro.classList.remove("out", "on"); void intro.offsetWidth;
+  requestAnimationFrame(() => intro.classList.add("on"));
+  setTimeout(() => { intro.classList.add("out"); done(); }, full ? 4200 : 3000);
+}
+function restart(full) {
+  paused = true; hold = 0; meteors = []; sparks = []; ACT.fill(0); GON.fill(0); GA.fill(0); capFor = -1; document.querySelectorAll(".cap").forEach(e => e.remove());
+  const m = full && /^#h(\d+)$/.exec(location.hash);   // 確認用: #h<時> からはじめる
+  playIntro(full, () => { hStart = m ? Math.min(H - 1, +m[1]) : 0; hCur = hStart - 1; tAcc = 0; paused = false; });
+}
+layout();
+let rs; addEventListener("resize", () => { clearTimeout(rs); rs = setTimeout(layout, 120); });
+// 地球儀は指（マウス）で回せる。離すと少し惰性で回る。動かさずに押したときだけ全画面
+let drag = null, spin = [0, 0], dirty = false;
+stage.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, r: ROT.slice(), t: performance.now(), lx: e.clientX, ly: e.clientY, moved: false }; spin = [0, 0]; try { stage.setPointerCapture(e.pointerId); } catch (_) {} });
+stage.addEventListener("pointermove", e => {
+  if (!drag || !PORTRAIT) return;
+  const k = 57.3 / proj.scale(), now = performance.now(), dt = Math.max(1, now - drag.t);
+  if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 6) drag.moved = true;
+  ROT = [drag.r[0] + (e.clientX - drag.x) * k, Math.max(-85, Math.min(85, drag.r[1] - (e.clientY - drag.y) * k))];
+  spin = [(e.clientX - drag.lx) * k / dt, -(e.clientY - drag.ly) * k / dt]; drag.lx = e.clientX; drag.ly = e.clientY; drag.t = now; dirty = true;
+});
+const endDrag = () => {
+  if (!drag) return;
+  if (!drag.moved) { spin = [0, 0]; try { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); } catch (e) {} }
+  else if (performance.now() - drag.t > 120) spin = [0, 0];
+  drag = null;
+};
+stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", endDrag);
+try { navigator.wakeLock?.request?.("screen").catch(() => {}); } catch (e) {}
+restart(true);
+requestAnimationFrame(t => { last = t; frame(t); });
+})();
+</script>
+</body>
+</html>
