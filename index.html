@@ -22,6 +22,9 @@
   --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
   --font-flag: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
+:root.apple {
+  --font-flag: "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+}
 html, body { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); overflow: hidden; cursor: default; }
 #stage { position: fixed; inset: 0; }
@@ -103,16 +106,22 @@ let GXY = [], GPATH = [];
 const BOTS = P.bots, BOT_AT = Array.from({ length: H }, () => []);
 BOTS.forEach((b, k) => { for (let o = 0; o < b.d; o++) if (b.s + o < H) BOT_AT[b.s + o].push([k, b.w[o]]); });
 const flag = c => String.fromCodePoint(...[...c].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65));
+if (/iPhone|iPad|Macintosh/.test(navigator.userAgent)) document.documentElement.classList.add("apple");   // 内蔵の絵文字を使う（大きなフォントを読まない）
+if (innerWidth >= innerHeight * .9) { const w = document.createElement("div"); w.className = "fl"; w.setAttribute("aria-hidden", "true");   // 国旗を前もって一度描く（はじめての BOT STORM で止まらないように）
+  w.style.cssText = "position:fixed;left:0;top:0;opacity:.01;pointer-events:none;font-size:20px;width:10px;overflow:hidden;font-family:var(--font-flag)";
+  w.textContent = [...new Set(P.bots.flatMap(b => b.c.map(x => x[0])))].map(flag).join(""); document.body.appendChild(w); setTimeout(() => w.remove(), 6000); }
 
 const stage = document.getElementById("stage"), base = document.getElementById("base"), glowC = document.getElementById("glow"), fx = document.getElementById("fx"), gC = document.getElementById("g");
 const bctx = base.getContext("2d"), lctx = glowC.getContext("2d"), ctx = fx.getContext("2d"), gctx = gC.getContext("2d");
 const land = topojson.feature(WORLD, WORLD.objects.countries), borders = topojson.mesh(WORLD, WORLD.objects.countries, (a, b) => a !== b);
-let PORTRAIT = false, MAX_M = 5000, ROT = [-136, -28], C0 = [0, 0], W, Hh, DPR, proj, TX, TY, pathCache = new Map(), CPATH = [], CXY = [];
+let GDPR = 1, PORTRAIT = false, MAX_M = 5000, ROT = [-136, -28], C0 = [0, 0], W, Hh, DPR, proj, TX, TY, pathCache = new Map(), CPATH = [], CXY = [];
 const CFEAT = P.countries.map(([, lon, lat]) => land.features.find(f => d3.geoContains(f, [lon, lat])) || null);
 
 function layout() {
   DPR = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; Hh = innerHeight;
-  for (const c of [base, glowC, fx]) { c.width = W * DPR; c.height = Hh * DPR; }
+  const portrait = W < Hh * .9; GDPR = portrait ? 1 : DPR;   // スマホは国の光の層を 1 倍の解像度で（ぼんやりした光なので見た目は変わらない）
+  for (const c of [base, fx]) { c.width = W * DPR; c.height = Hh * DPR; }
+  glowC.width = W * GDPR; glowC.height = Hh * GDPR;
   const m = Math.max(8, W * .01);
   PORTRAIT = W < Hh * .9;   // 縦長（スマホ）は画面いっぱいの地球儀（アジア・太平洋が正面）
   proj = PORTRAIT ? d3.geoOrthographic().rotate(ROT).translate([W / 2, Hh * .46]).scale(Math.min(W * .62, Hh * .4)).clipAngle(90)
@@ -124,7 +133,7 @@ function layout() {
 }
 function reproject() {   // 投影が変わったとき（大きさ・地球儀を回したとき）: 地図と、国・攻撃グループの位置を描き直す
   if (PORTRAIT) proj.rotate(ROT);
-  const r = proj.rotate(); C0 = [-r[0] * Math.PI / 180, -r[1] * Math.PI / 180];
+  const r = proj.rotate(); C0 = [-r[0] * Math.PI / 180, -r[1] * Math.PI / 180]; glowSkip = 0;
   [TX, TY] = proj(TARGET);
   bctx.setTransform(DPR, 0, 0, DPR, 0, 0); bctx.fillStyle = css("--bg"); bctx.fillRect(0, 0, W, Hh);
   const gp = d3.geoPath(proj, bctx);
@@ -138,7 +147,7 @@ function reproject() {   // 投影が変わったとき（大きさ・地球儀�
   bctx.beginPath(); gp(d3.geoGraticule10()); bctx.strokeStyle = css("--grat"); bctx.lineWidth = 1; bctx.stroke();
   bctx.beginPath(); gp(land); bctx.fillStyle = css("--land"); bctx.fill();
   bctx.beginPath(); gp(borders); bctx.strokeStyle = css("--edge"); bctx.lineWidth = .8; bctx.stroke();
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, Hh); lctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, Hh); lctx.setTransform(GDPR, 0, 0, GDPR, 0, 0);
   GXY = GR.map(g => g.p.map(q => vis(q[0], q[1]) ? proj(q) : null));
   const gpth = d3.geoPath(proj); GPATH = GR.map(g => new Path2D(gpth({ type: "MultiLineString", coordinates: g.e.map(([i, j]) => [g.p[i], g.p[j]]) }) || ""));   // 大円で結ぶ（地図の端・地球儀の裏で切る）
   const sp = d3.geoPath(proj); CPATH = CFEAT.map(f => f ? new Path2D(sp(f)) : null); CXY = P.countries.map(([, lon, lat]) => vis(lon, lat) ? proj([lon, lat]) : null);
@@ -169,15 +178,16 @@ function spawnHour(h) {
     const k = RK[i] >> 4, lv = RK[i] & 15, n = lv >= 11 ? 3 : lv >= 7 ? 2 : 1;
     for (let j = 0; j < n && meteors.length < MAX_M; j++) {
       const lon = RX[i] * CELL - 180 + Math.random() * CELL, lat = RY[i] * CELL - 90 + Math.random() * CELL;
-      meteors.push({ a: arc(lon, lat), t: -Math.random() * .6, sp: .55 + Math.random() * .35, c: COL[k], s: .7 + lv * .12 + (k === 3 ? .8 : 0), al: k === 3 ? .95 : .35 + Math.min(.6, lv * .05) });   // SQLi は数が少ないので太く明るく
+      meteors.push({ a: arc(lon, lat), t: -Math.random() * .6, sp: .55 + Math.random() * .35, c: COL[k], ci: k, s: .7 + lv * .12 + (k === 3 ? .8 : 0), al: k === 3 ? .95 : .35 + Math.min(.6, lv * .05) });   // SQLi は数が少ないので太く明るく
     }
   }
+  const bf = PORTRAIT || W < 900 ? .12 : .3; let bn = 0, bcap = PORTRAIT || W < 900 ? 260 : 900;
   for (const [k, w] of BOT_AT[h]) {   // ボット: 国ごとの流れ（強さ × 国の割合）
     for (const [, lvl, lon, lat] of BOTS[k].c) {
       if (lon === null) continue;
-      const n = Math.round(w * lvl * .3 + (Math.random() < w * lvl * .3 % 1 ? 1 : 0));
-      for (let j = 0; j < n && meteors.length < MAX_M; j++)
-        meteors.push({ a: arc(lon + (Math.random() - .5) * 4, lat + (Math.random() - .5) * 3), t: -Math.random() * .5, sp: .8 + Math.random() * .4, c: BOT, s: .55, al: .32, bot: 1 });
+      const n = Math.round(w * lvl * bf + (Math.random() < w * lvl * bf % 1 ? 1 : 0));
+      for (let j = 0; j < n && meteors.length < MAX_M && bn++ < bcap; j++)
+        meteors.push({ a: arc(lon + (Math.random() - .5) * 4, lat + (Math.random() - .5) * 3), t: -Math.random() * .5, sp: .8 + Math.random() * .4, c: BOT, ci: 4, s: .55, al: .32, bot: 1 });
     }
   }
   const b = BOT_AT[h].find(([k]) => BOTS[k].s === h || (capFor < 0 && h === hStart && BOTS[k].s < h));
@@ -193,25 +203,34 @@ function showCap(k) {
   capFor = k; document.querySelectorAll(".cap").forEach(e => e.remove());
   const c = BOTS[k].c, el = document.createElement("div"); el.className = "cap";
   const px = PORTRAIT ? Math.min(1, innerWidth / 1000) : Math.min(1, innerWidth / 2880);
-  el.innerHTML = `<b>BOT STORM</b><div class="fl">${c.map(([cc, l]) => `<span style="font-size:${Math.round((10 + l * 4) * px + 5)}px">${flag(cc)}</span>`).join("")}</div>`;
+  el.innerHTML = PORTRAIT ? `<b>BOT STORM</b>` : `<b>BOT STORM</b><div class="fl">${c.map(([cc, l]) => `<span style="font-size:${Math.round((10 + l * 4) * px + 5)}px">${flag(cc)}</span>`).join("")}</div>`;
   document.body.appendChild(el); setTimeout(() => el.remove(), 7100);
 }
 function draw(dt) {
   ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.fillRect(0, 0, W, Hh);
   ctx.globalCompositeOperation = "lighter";
-  const keep = [];
+  const keep = [], bk = new Map();   // 色・明るさ・太さごとにまとめて 1 回で描く（スマホで重かった・2026-10-09）
   for (const m of meteors) {
     m.t += dt * m.sp;
     if (m.t <= 0) { keep.push(m); continue; }
     if (m.t >= 1) { if (!m.bot && Math.random() < .25) sparks.push({ r: 4, a: .5 * m.al, c: m.c }); continue; }
-    const p = at(m.a, m.t), q = at(m.a, Math.max(0, m.t - .06));
-    if (!p || !q || Math.abs(p[0] - q[0]) > W * .3) { keep.push(m); continue; }
-    ctx.strokeStyle = `rgba(${m.c[0]},${m.c[1]},${m.c[2]},${m.al * .55})`; ctx.lineWidth = m.s;
-    ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
-    ctx.fillStyle = `rgba(${m.c[0]},${m.c[1]},${m.c[2]},${m.al})`; ctx.beginPath(); ctx.arc(p[0], p[1], m.s * 1.1, 0, 6.283); ctx.fill();
     keep.push(m);
+    const p = at(m.a, m.t), q = at(m.a, Math.max(0, m.t - .06));
+    if (!p || !q || Math.abs(p[0] - q[0]) > W * .3) continue;
+    const key = m.ci * 100 + Math.round(m.al * 5) * 10 + Math.min(9, Math.round(m.s * 2));
+    let b = bk.get(key); if (!b) bk.set(key, b = []);
+    b.push(q[0], q[1], p[0], p[1]);
   }
   meteors = keep;
+  for (const [key, b] of bk) {
+    const c = key >= 400 ? BOT : COL[Math.floor(key / 100)], al = Math.floor(key / 10) % 10 / 5, w = key % 10 / 2;
+    ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(al * .55).toFixed(2)})`; ctx.lineWidth = w; ctx.beginPath();
+    for (let i = 0; i < b.length; i += 4) { ctx.moveTo(b[i], b[i + 1]); ctx.lineTo(b[i + 2], b[i + 3]); }
+    ctx.stroke();
+    ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${al.toFixed(2)})`; ctx.beginPath(); const r = w * 1.1;
+    for (let i = 0; i < b.length; i += 4) ctx.rect(b[i + 2] - r, b[i + 3] - r, r * 2, r * 2);
+    ctx.fill();
+  }
   for (const s of (vis(TARGET[0], TARGET[1]) ? sparks : [])) { s.r += dt * 60; s.a -= dt * .9; if (s.a > 0) { ctx.strokeStyle = `rgba(${s.c[0]},${s.c[1]},${s.c[2]},${s.a})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(TX, TY, s.r, 0, 6.283); ctx.stroke(); } }
   sparks = sparks.filter(s => s.a > 0).slice(-160);
   // 日本: 攻撃の多い時間ほど明るく（地球儀の裏にあるときは描かない）
@@ -221,7 +240,18 @@ function draw(dt) {
   ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(TX, TY, R * (2.2 + glow * 2.5), 0, 6.283); ctx.fill();
   ctx.globalCompositeOperation = "source-over";
 }
+const SPR = (() => {   // 光の柱・柱の周りの光・根元の光の絵（一度だけ作る）
+  const mk = (w, h, f) => { const c = document.createElement("canvas"); c.width = w; c.height = h; f(c.getContext("2d"), w, h); return c; };
+  return {
+    pillar: mk(16, 256, (g, w, h) => { const l = g.createLinearGradient(0, h, 0, 0); l.addColorStop(0, "rgba(255,255,255,1)"); l.addColorStop(.3, "rgba(160,195,255,.75)"); l.addColorStop(1, "rgba(150,190,255,0)"); g.fillStyle = l; g.fillRect(0, 0, w, h); }),
+    beam: mk(32, 256, (g, w, h) => { const l = g.createLinearGradient(0, h, 0, 0); l.addColorStop(0, "rgba(120,160,255,1)"); l.addColorStop(1, "rgba(120,160,255,0)"); g.fillStyle = l; g.fillRect(0, 0, w, h); }),
+    dot: mk(64, 64, (g, w) => { const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(1, "rgba(150,190,255,0)"); g.fillStyle = r; g.fillRect(0, 0, w, w); }),
+  };
+})();
+let glowSkip = 0, glowDt = 0;
 function drawCountries(dt) {   // 国の光（送信の強さ）と首都の光の柱
+  glowDt += dt; if (PORTRAIT && !dirty && glowSkip++ % 2) return;   // スマホは 2 フレームに 1 回
+  dt = glowDt; glowDt = 0;
   lctx.clearRect(0, 0, W, Hh); lctx.globalCompositeOperation = "lighter";
   const k = Math.min(1, dt * 6), Lmax = Math.log1p(AMAX), ph = (PORTRAIT ? Hh * .16 : Hh * .26);
   for (let c = 0; c < NCT; c++) {
@@ -230,15 +260,11 @@ function drawCountries(dt) {   // 国の光（送信の強さ）と首都の光�
     if (CPATH[c]) { lctx.fillStyle = `rgba(118,150,255,${(v * .6).toFixed(3)})`; lctx.fill(CPATH[c]); lctx.strokeStyle = `rgba(170,195,255,${(v * .5).toFixed(3)})`; lctx.lineWidth = .8; lctx.stroke(CPATH[c]); }
     const q = CXY[c]; if (!q) continue;
     if (PORTRAIT && d3.geoDistance(P.countries[c].slice(1), [-proj.rotate()[0], -proj.rotate()[1]]) > 1.5) continue;
-    const x = q[0], y = q[1], hgt = 8 + Math.pow(v, 1.5) * ph, wd = 2 + v * 5;
-    const g = lctx.createLinearGradient(x, y, x, y - hgt);
-    g.addColorStop(0, `rgba(255,255,255,${(.45 + v * .55).toFixed(3)})`); g.addColorStop(.3, `rgba(160,195,255,${(.15 + v * .65).toFixed(3)})`); g.addColorStop(1, "rgba(150,190,255,0)");
-    lctx.fillStyle = g; lctx.fillRect(x - wd / 2, y - hgt, wd, hgt);
-    const bg = lctx.createLinearGradient(x, y, x, y - hgt * .7);
-    bg.addColorStop(0, `rgba(120,160,255,${(v * .3).toFixed(3)})`); bg.addColorStop(1, "rgba(120,160,255,0)");
-    lctx.fillStyle = bg; lctx.fillRect(x - wd * 3, y - hgt * .7, wd * 6, hgt * .7);
-    const rg = lctx.createRadialGradient(x, y, 0, x, y, 4 + v * 14); rg.addColorStop(0, `rgba(255,255,255,${(.3 + v * .5).toFixed(3)})`); rg.addColorStop(1, "rgba(150,190,255,0)");
-    lctx.fillStyle = rg; lctx.beginPath(); lctx.arc(x, y, 4 + v * 14, 0, 6.283); lctx.fill();
+    const x = q[0], y = q[1], hgt = 8 + Math.pow(v, 1.5) * ph, wd = 2 + v * 5, rr = 4 + v * 14;
+    lctx.globalAlpha = .45 + v * .55; lctx.drawImage(SPR.pillar, x - wd / 2, y - hgt, wd, hgt);
+    lctx.globalAlpha = v * .3; lctx.drawImage(SPR.beam, x - wd * 3, y - hgt * .7, wd * 6, hgt * .7);
+    lctx.globalAlpha = .3 + v * .5; lctx.drawImage(SPR.dot, x - rr, y - rr, rr * 2, rr * 2);
+    lctx.globalAlpha = 1;
   }
   for (let k = 0; k < NG; k++) {   // 攻撃グループの星座
     GA[k] += ((GON[k] ? 1 : 0) - GA[k]) * Math.min(1, dt * 3);
@@ -248,7 +274,7 @@ function drawCountries(dt) {   // 国の光（送信の強さ）と首都の光�
       lctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(al * a).toFixed(3)})`; lctx.lineWidth = w; lctx.stroke(GPATH[k]);
     }
     lctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(.95 * a).toFixed(3)})`;
-    for (const p of xy) { if (!p) continue; lctx.beginPath(); lctx.arc(p[0], p[1], 2.3, 0, 6.283); lctx.fill(); }
+    lctx.beginPath(); for (const p of xy) if (p) lctx.rect(p[0] - 2, p[1] - 2, 4, 4); lctx.fill();
   }
   lctx.globalCompositeOperation = "source-over";
 }
