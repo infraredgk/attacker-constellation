@@ -6,6 +6,9 @@
 <meta name="description" content="A year of web attacks reaching Japan, drawn as light on a world map.">
 <meta property="og:title" content="Attacker Constellation">
 <meta property="og:description" content="A year of web attacks reaching Japan, drawn as light on a world map.">
+<meta property="og:image" content="https://infraredgk.github.io/attacker-constellation/og.png">
+<meta property="og:url" content="https://infraredgk.github.io/attacker-constellation/">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#050913">
 <title>Attacker Constellation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -199,6 +202,10 @@ function spawnHour(h) {
   const mo = (P.months || []).filter(x => x[0] <= h).pop(); if (mo && monEl.textContent !== mo[1]) monEl.textContent = mo[1];
 }
 let hStart = 0; const monEl = document.getElementById("mon");
+// 計測（公開版だけ GoatCounter を読む。無ければ何もしない）: 操作の回数だけ。誰が見たかは送らない
+const sent = new Set(), track = (n, once) => { if (once && sent.has(n)) return; sent.add(n); try { window.goatcounter?.count?.({ path: n, title: n, event: true }); } catch (e) {} };
+setTimeout(() => document.visibilityState === "visible" && track("watch-60s", 1), 60000);
+setTimeout(() => document.visibilityState === "visible" && track("watch-180s", 1), 180000);
 function showCap(k) {
   capFor = k; document.querySelectorAll(".cap").forEach(e => e.remove());
   const c = BOTS[k].c, el = document.createElement("div"); el.className = "cap";
@@ -294,7 +301,7 @@ function frame(now) {
   if (!paused) {
     tAcc += dt * 1000;
     while (tAcc >= HOUR_MS && hCur < H - 1) { tAcc -= HOUR_MS; hCur++; spawnHour(hCur); }
-    if (hCur >= H - 1 && (hold += dt) > 2.5) restart(false);
+    if (hCur >= H - 1 && (hold += dt) > 2.5) { track("loop-complete"); restart(false); }
     if (hCur >= 0) drawGraph(hCur);
   }
   if (Math.abs(spin[0]) + Math.abs(spin[1]) > .002 && !drag) { ROT = [ROT[0] + spin[0] * dt * 1000, Math.max(-85, Math.min(85, ROT[1] + spin[1] * dt * 1000))]; spin = spin.map(v => v * Math.pow(.05, dt)); dirty = true; }
@@ -321,13 +328,13 @@ stage.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY
 stage.addEventListener("pointermove", e => {
   if (!drag || !PORTRAIT) return;
   const k = 57.3 / proj.scale(), now = performance.now(), dt = Math.max(1, now - drag.t);
-  if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 6) drag.moved = true;
+  if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 6) { drag.moved = true; track("globe-drag", 1); }
   ROT = [drag.r[0] + (e.clientX - drag.x) * k, Math.max(-85, Math.min(85, drag.r[1] - (e.clientY - drag.y) * k))];
   spin = [(e.clientX - drag.lx) * k / dt, -(e.clientY - drag.ly) * k / dt]; drag.lx = e.clientX; drag.ly = e.clientY; drag.t = now; dirty = true;
 });
 const endDrag = () => {
   if (!drag) return;
-  if (!drag.moved) { spin = [0, 0]; try { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); } catch (e) {} }
+  if (!drag.moved) { spin = [0, 0]; try { if (!document.fullscreenElement) { track("fullscreen", 1); document.documentElement.requestFullscreen?.().catch(() => {}); } } catch (e) {} }
   else if (performance.now() - drag.t > 120) spin = [0, 0];
   drag = null;
 };
@@ -337,5 +344,6 @@ restart(true);
 requestAnimationFrame(t => { last = t; frame(t); });
 })();
 </script>
+<script data-goatcounter="https://attacker-constellation.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
