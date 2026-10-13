@@ -10,6 +10,12 @@
 <meta property="og:url" content="https://infraredgk.github.io/attacker-constellation/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#050913">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Constellation">
 <title>Attacker Constellation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +43,7 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
 .brand time { display: block; margin-top: .55em; font-family: var(--font-display); font-weight: 300; font-size: clamp(1.4rem, 2.6vw, 3.6rem); letter-spacing: .08em; color: var(--fg); font-variant-numeric: tabular-nums; text-shadow: 0 2px 14px var(--bg); }
 .brand p { margin: .5em 0 0; font-family: var(--font-display); font-size: clamp(.55rem, .78vw, 1.05rem); letter-spacing: .42em; color: var(--violet); }
 .legend { font-family: var(--font-display); letter-spacing: .06em; position: fixed; right: clamp(16px, 1.6vw, 40px); top: calc(env(safe-area-inset-top, 0px) + clamp(14px, 1.5vw, 36px)); display: flex; gap: 1.4em; font-size: clamp(.62rem, .82vw, 1.1rem); color: var(--muted); pointer-events: none; flex-wrap: wrap; justify-content: flex-end; max-width: 60vw; }
+.legend b { font-weight: inherit; }
 .legend span { display: inline-flex; align-items: center; gap: .5em; white-space: nowrap; }
 .legend i.ln { width: 1.4em; height: 2px; border-radius: 1px; background: linear-gradient(90deg, #5eead4, #a78bfa, #facc15); box-shadow: none; }
 .legend i { width: .62em; height: .62em; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px currentColor; }
@@ -55,12 +62,31 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
 .intro p { margin: 1.6em 0 0; font-family: var(--font-display); font-size: clamp(.7rem, 1.2vw, 1.7rem); letter-spacing: .5em; color: var(--violet); opacity: 0; transition: opacity 1.4s ease .8s; }
 .intro.on h2 { letter-spacing: .3em; filter: none; } .intro.on p { opacity: 1; }
 .err { position: fixed; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 1rem; padding-inline: 16px; text-align: center; }
+/* 読み方・QR（2026-10-13 toshi: 来場者が自分のスマホで見る・同僚に QR を見せて広げる）*/
+.tools { position: fixed; z-index: 5; right: clamp(16px, 1.6vw, 40px); top: calc(env(safe-area-inset-top, 0px) + clamp(44px, 4.2vw, 96px)); display: flex; gap: .5em; }
+.tools button, .panel button { font: inherit; font-family: var(--font-display); font-size: clamp(.7rem, .9vw, 1.1rem); letter-spacing: .08em; color: var(--fg); background: color-mix(in srgb, var(--bg) 70%, transparent);
+  border: 1px solid var(--edge); border-radius: 999px; padding: .45em .95em; cursor: pointer; min-height: 36px; }
+.tools button:hover, .panel button:hover { border-color: var(--muted); }
+.panel { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 82%, transparent); padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px); overflow-y: auto; }
+.panel[hidden] { display: none; }
+.panel .box { max-width: 34rem; width: 100%; background: var(--sea); border: 1px solid var(--edge); border-radius: 12px; padding: 1.2em 1.3em; line-height: 1.65; font-size: clamp(.86rem, 1vw, 1.05rem); }
+.panel h3 { margin: 0 0 .6em; font-family: var(--font-display); font-weight: 400; letter-spacing: .12em; font-size: 1.05em; }
+.panel ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .45em; }
+.panel li { display: grid; grid-template-columns: 1.4em minmax(0, 1fr); gap: .5em; align-items: baseline; }
+.panel li i { width: .62em; height: .62em; border-radius: 50%; display: inline-block; justify-self: center; box-shadow: 0 0 10px currentColor; }
+.panel .fine { color: var(--muted); font-size: .86em; margin: .9em 0 0; }
+.panel .by { margin: .9em 0 0; } .panel .by a { color: var(--violet); }
+.panel .row { display: flex; flex-wrap: wrap; gap: .5em; margin-top: 1em; justify-content: flex-end; }
+.qrbox { text-align: center; } .qrbox svg { width: min(68vw, 320px, 52vh); height: auto; background: #fff; border-radius: 10px; padding: 12px; box-sizing: border-box; }
+.qrbox .url { margin-top: .6em; font-family: var(--font-display); font-size: .8em; color: var(--muted); word-break: break-all; user-select: all; }
+@media (min-aspect-ratio: 9/10) { .brand { padding: .2em .6em .5em .2em; border-radius: 12px; background: radial-gradient(ellipse at 20% 40%, color-mix(in srgb, var(--bg) 88%, transparent) 30%, transparent 75%); } }   /* 横向きで題と地図の線が重なった */
 @media (prefers-reduced-motion: reduce) { .intro h2 { transition: none; letter-spacing: .3em; filter: none; } .cap { animation: none; } }
 @media (max-aspect-ratio: 9/10) {
   .brand { left: 0; right: 0; text-align: center; top: calc(env(safe-area-inset-top, 0px) + 22px); }
   .brand h1 { font-size: clamp(1rem, 5.4vw, 2.4rem); letter-spacing: .18em; } .brand time { font-size: clamp(1.3rem, 7vw, 2.6rem); margin-top: .35em; } .brand p { font-size: clamp(.55rem, 2.4vw, 1rem); letter-spacing: .36em; }
   .legend { top: auto; left: 16px; right: 16px; max-width: none; justify-content: center; gap: 1em; font-size: clamp(.62rem, 2.8vw, 1rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
   .graph { left: 16px; right: 16px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); } .graph canvas { height: clamp(44px, 7vh, 110px); }
+  .tools { top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; right: 10px; justify-content: space-between; pointer-events: none; } .tools button { pointer-events: auto; min-width: 40px; }   /* 題の左右の上の角（下は BOT STORM のテロップと重なった）*/
   .cap { width: calc(100vw - 32px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18vh); }
   .cap b { font-size: clamp(1.2rem, 6.5vw, 2.4rem); }
   .intro h2 { font-size: clamp(1.1rem, 6vw, 3rem); letter-spacing: .6em; white-space: normal; } .intro.on h2 { letter-spacing: .2em; }
@@ -71,10 +97,60 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
 <body>
 <div id="stage"><canvas id="base" aria-hidden="true"></canvas><canvas id="glow" aria-hidden="true"></canvas><canvas id="fx" role="img" aria-label="世界の攻撃元から日本へ向かう攻撃とボットの流れ"></canvas></div>
 <header class="brand"><h1>ATTACKER CONSTELLATION</h1><p>HIGH DENSITY INTELLIGENCE</p><time id="mon"></time></header>
-<div class="legend"><span style="color:var(--probe)"><i style="background:var(--probe)"></i>Probe</span><span style="color:var(--exploit)"><i style="background:var(--exploit)"></i>Exploit</span><span style="color:var(--sqli)"><i style="background:var(--sqli)"></i>SQLi</span><span style="color:var(--shell)"><i style="background:var(--shell)"></i>Web shell</span><span style="color:var(--bot)"><i style="background:var(--bot)"></i>Bot</span><span style="color:var(--fg)"><i class="ln"></i>Attack group</span></div>
-<div class="graph"><canvas id="g" aria-hidden="true"></canvas><div>HOURLY ACTIVITY</div></div>
+<div class="legend"><span style="color:var(--probe)"><i style="background:var(--probe)"></i><b data-t="probe">Probe</b></span><span style="color:var(--exploit)"><i style="background:var(--exploit)"></i><b data-t="exploit">Exploit</b></span><span style="color:var(--sqli)"><i style="background:var(--sqli)"></i><b data-t="sqli">SQLi</b></span><span style="color:var(--shell)"><i style="background:var(--shell)"></i><b data-t="shell">Web shell</b></span><span style="color:var(--bot)"><i style="background:var(--bot)"></i><b data-t="bot">Bot</b></span><span style="color:var(--fg)"><i class="ln"></i><b data-t="group">Attack group</b></span></div>
+<div class="graph"><canvas id="g" aria-hidden="true"></canvas><div data-t="hourly">HOURLY ACTIVITY</div></div>
+<div class="tools"><button type="button" id="bHelp" aria-label="読み方 / How to read">?</button><button type="button" id="bQr">QR</button></div>
+<div class="panel" id="pHelp" hidden><div class="box" role="dialog" aria-labelledby="hHelp"><h3 id="hHelp" data-t="h_help">この地図の読み方</h3><ul>
+  <li><i style="background:var(--probe);color:var(--probe)"></i><span data-t="l_flow">光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・攻撃の手口・SQL インジェクション・Web シェル）</span></li>
+  <li><i style="background:var(--bot);color:var(--bot)"></i><span data-t="l_bot">青い流れと BOT STORM = 多くの国から一度に来たボット（国旗は来た国）</span></li>
+  <li><i style="background:#a0c3ff;color:#a0c3ff"></i><span data-t="l_glow">光る国・光の柱 = その国から送られた量（相対）</span></li>
+  <li><i class="ln" style="width:1.2em;height:2px;border-radius:1px;background:linear-gradient(90deg,#5eead4,#a78bfa,#facc15)"></i><span data-t="l_group">線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）</span></li>
+  <li><i style="background:#dfe7f4;color:#dfe7f4"></i><span data-t="l_graph">右下のグラフ = 1 時間ごとの増減</span></li></ul>
+  <p class="fine" data-t="l_anon">1 年分を 1 日 1 秒で再生。位置は 2 度の格子、時刻はずらし、件数・サイト名は出していない。</p>
+  <p class="by"><a href="https://lp.mitsukeru.io/" target="_blank" rel="noopener" id="aBy" data-t="by">ミツケル（MITSUKERU）の解析で作りました ↗</a></p>
+  <div class="row"><button type="button" id="bLang">English</button><button type="button" data-close data-t="close">閉じる</button></div></div></div>
+<div class="panel" id="pQr" hidden><div class="box qrbox" role="dialog" aria-labelledby="hQr"><h3 id="hQr" data-t="h_qr">この画面を QR で</h3><div id="qrSvg"><svg viewBox="0 0 296 296" role="img" aria-label="QR code" xmlns="http://www.w3.org/2000/svg" width="296" height="296" class="segno"><g transform="scale(8)"><path fill="#fff" d="M0 0h37v37h-37z"/><path class="qrline" stroke="#050913" d="M2 2.5h7m2 0h1m2 0h4m1 0h1m1 0h1m1 0h1m1 0h1m2 0h7m-33 1h1m5 0h1m3 0h1m1 0h4m2 0h1m1 0h2m1 0h2m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m1 0h1m1 0h1m1 0h1m4 0h3m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m1 0h2m5 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h2m1 0h6m1 0h2m4 0h1m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-23 1h1m3 0h4m1 0h6m-25 1h1m2 0h1m1 0h2m1 0h2m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-28 1h2m2 0h2m3 0h1m2 0h3m2 0h1m2 0h1m3 0h4m3 0h2m-33 1h2m2 0h8m1 0h2m1 0h4m2 0h1m1 0h5m1 0h1m1 0h1m-30 1h1m1 0h1m1 0h1m2 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m4 0h2m2 0h1m-33 1h1m2 0h2m1 0h4m2 0h1m1 0h5m1 0h2m2 0h3m2 0h1m2 0h1m-33 1h1m1 0h1m4 0h3m2 0h1m1 0h2m2 0h2m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m-30 1h1m1 0h3m3 0h3m1 0h4m4 0h6m2 0h1m-28 1h1m3 0h1m1 0h2m1 0h1m2 0h2m2 0h5m1 0h1m1 0h1m2 0h1m-32 1h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m2 0h3m3 0h1m1 0h1m2 0h1m-32 1h1m1 0h1m4 0h3m2 0h1m1 0h1m1 0h3m2 0h1m1 0h3m1 0h1m1 0h1m1 0h1m-32 1h5m1 0h1m1 0h2m1 0h2m7 0h1m1 0h1m1 0h2m4 0h3m-33 1h1m2 0h1m1 0h1m1 0h3m2 0h2m1 0h7m2 0h4m-27 1h3m1 0h2m2 0h1m3 0h4m2 0h1m1 0h1m1 0h1m1 0h1m5 0h1m-30 1h3m3 0h1m1 0h4m1 0h1m1 0h2m1 0h3m1 0h4m1 0h4m-33 1h2m3 0h5m9 0h1m2 0h1m2 0h1m2 0h2m2 0h1m-32 1h1m1 0h3m2 0h1m1 0h1m1 0h4m2 0h1m2 0h1m1 0h1m2 0h2m1 0h1m2 0h1m-33 1h1m1 0h1m1 0h1m1 0h3m1 0h2m1 0h1m2 0h2m1 0h3m2 0h5m-21 1h3m3 0h1m2 0h1m1 0h1m1 0h4m3 0h2m1 0h2m-33 1h7m2 0h1m1 0h1m1 0h1m2 0h3m1 0h1m3 0h1m1 0h1m1 0h4m-32 1h1m5 0h1m1 0h1m1 0h1m3 0h1m1 0h3m2 0h1m2 0h1m3 0h1m2 0h1m-32 1h1m1 0h3m1 0h1m5 0h1m1 0h2m1 0h1m2 0h3m1 0h6m2 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m2 0h2m2 0h1m2 0h1m2 0h1m2 0h1m1 0h1m1 0h2m-30 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h3m2 0h1m1 0h1m4 0h3m1 0h1m-33 1h1m5 0h1m5 0h1m3 0h2m3 0h1m2 0h3m-27 1h7m1 0h1m2 0h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h1m1 0h1m1 0h1m2 0h1"/></g></svg></div><div class="url" id="qrUrl"></div>
+  <div class="row" style="justify-content:center"><button type="button" id="bShare" hidden data-t="share">共有</button><button type="button" data-close data-t="close">閉じる</button></div></div></div>
 <div class="intro" id="intro"><div><h2>ATTACKER CONSTELLATION</h2><p>HIGH DENSITY INTELLIGENCE</p></div></div>
 
+<script>
+// 読み方・QR・言語（2026-10-13・地図の再生とは別に動く。データを読めなくても使える）
+(() => {
+  const URL0 = "https://infraredgk.github.io/attacker-constellation/";
+  const T = {
+    ja: { probe: "探索", exploit: "攻撃の手口", sqli: "SQLi", shell: "Web シェル", bot: "ボット", group: "攻撃グループ", hourly: "1 時間ごとの増減",
+          h_help: "この地図の読み方", l_flow: "光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・攻撃の手口・SQL インジェクション・Web シェル）",
+          l_bot: "青い流れと BOT STORM = 多くの国から一度に来たボット（国旗は来た国）", l_glow: "光る国・光の柱 = その国から送られた量（相対）",
+          l_group: "線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）", l_graph: "右下のグラフ = 1 時間ごとの増減",
+          l_anon: "1 年分を 1 日 1 秒で再生。位置は 2 度の格子、時刻はずらし、件数・サイト名は出していない。", by: "ミツケル（MITSUKERU）の解析で作りました ↗",
+          h_qr: "この画面を QR で", share: "共有", close: "閉じる", lang: "English" },
+    en: { probe: "Probe", exploit: "Exploit", sqli: "SQLi", shell: "Web shell", bot: "Bot", group: "Attack group", hourly: "HOURLY ACTIVITY",
+          h_help: "How to read this map", l_flow: "Streams of light = probes and attacks from sources worldwide to sites in Japan. Color = type (probe, exploit, SQL injection, web shell)",
+          l_bot: "Blue streams and BOT STORM = bots arriving from many countries at once (flags = their countries)", l_glow: "Glowing countries and pillars = relative volume sent from that country",
+          l_group: "Linked dots = sources that probed alike (estimated groups)", l_graph: "Bottom-right graph = hourly activity",
+          l_anon: "A year replayed at one day per second. Positions are rounded to a 2° grid, times are shifted, and no counts or site names are shown.", by: "Built with MITSUKERU analysis ↗",
+          h_qr: "Open this page by QR", share: "Share", close: "Close", lang: "日本語" } };
+  let lang = "en"; try { lang = localStorage.getItem("ac-lang") || ((navigator.language || "").startsWith("ja") ? "ja" : "en"); } catch (e) { lang = (navigator.language || "").startsWith("ja") ? "ja" : "en"; }
+  const $ = id => document.getElementById(id);
+  const track = n => { try { window.goatcounter?.count?.({ path: n, title: n, event: true }); } catch (e) {} };
+  const apply = () => { const t = T[lang]; document.documentElement.lang = lang; document.querySelectorAll("[data-t]").forEach(e => { if (t[e.dataset.t]) e.textContent = t[e.dataset.t]; }); $("bLang").textContent = t.lang; };
+  const open = id => { $(id).hidden = false; }, close = () => document.querySelectorAll(".panel").forEach(e => e.hidden = true);
+  $("bHelp").onclick = () => { open("pHelp"); track("help"); };
+  $("bQr").onclick = async () => {
+    const box = $("qrSvg");
+    if (!box.querySelector("svg")) { try { box.innerHTML = await fetch("qr.svg").then(r => r.ok ? r.text() : ""); } catch (e) {} }
+    $("qrUrl").textContent = URL0; open("pQr"); track("qr-show");
+  };
+  $("bLang").onclick = () => { lang = lang === "ja" ? "en" : "ja"; try { localStorage.setItem("ac-lang", lang); } catch (e) {} apply(); };
+  if (navigator.share) { $("bShare").hidden = false; $("bShare").onclick = () => { track("share"); navigator.share({ title: "Attacker Constellation", url: URL0 }).catch(() => {}); }; }
+  document.querySelectorAll(".panel").forEach(pn => pn.addEventListener("click", e => { if (e.target === pn || e.target.closest("[data-close]")) close(); }));
+  addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+  $("aBy").addEventListener("click", () => track("mitsukeru-link"));
+  apply();
+  if (new URLSearchParams(location.search).get("s") === "qr") setTimeout(() => track("from-qr"), 3000);   // QR から開いた（広がったかを数える・誰かは送らない）
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});   // 一度開けば電波が悪くても再生できる
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
