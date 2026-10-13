@@ -147,7 +147,7 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
   addEventListener("keydown", e => { if (e.key === "Escape") close(); });
   $("aBy").addEventListener("click", () => track("mitsukeru-link"));
   apply();
-  if (new URLSearchParams(location.search).get("s") === "qr") setTimeout(() => track("from-qr"), 3000);   // QR から開いた（広がったかを数える・誰かは送らない）
+  { const src = new URLSearchParams(location.search).get("s"); if (src === "qr" || src === "expo") setTimeout(() => track(src === "qr" ? "from-qr" : "from-expo"), 3000); }   // QR から開いた（qr = 公開版の QR で人から人へ · expo = 展示の画面の QR）。誰かは送らない
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});   // 一度開けば電波が悪くても再生できる
 })();
 </script>
