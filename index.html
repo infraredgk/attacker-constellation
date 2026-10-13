@@ -228,7 +228,9 @@ function reproject() {   // 投影が変わったとき（大きさ・地球儀�
   bctx.beginPath(); gp(borders); bctx.strokeStyle = css("--edge"); bctx.lineWidth = .8; bctx.stroke();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, Hh); lctx.setTransform(GDPR, 0, 0, GDPR, 0, 0);
   GXY = GR.map(g => g.p.map(q => vis(q[0], q[1]) ? proj(q) : null));
-  const gpth = d3.geoPath(proj); GPATH = GR.map(g => new Path2D(gpth({ type: "MultiLineString", coordinates: g.e.map(([i, j]) => [g.p[i], g.p[j]]) }) || ""));   // 大円で結ぶ（地図の端・地球儀の裏で切る）
+  // 大円で結ぶ（地球儀の裏で切る）。平面の地図では、地図の端（太平洋が中心なので大西洋）をまたぐ線は描かない（アメリカと欧州を結ぶ線が画面の外へ出た・toshi 2026-10-13）。同じ色の点で同じ集まりと分かる
+  const cross = (a, b) => { if (PORTRAIT) return false; const it = d3.geoInterpolate(a, b); let px = null; for (let k = 0; k <= 24; k++) { const q = proj(it(k / 24)); if (px !== null && Math.abs(q[0] - px) > W * .25) return true; px = q[0]; } return false; };
+  const gpth = d3.geoPath(proj); GPATH = GR.map(g => new Path2D(gpth({ type: "MultiLineString", coordinates: g.e.filter(([i, j]) => !cross(g.p[i], g.p[j])).map(([i, j]) => [g.p[i], g.p[j]]) }) || ""));
   const sp = d3.geoPath(proj); CPATH = CFEAT.map(f => f ? new Path2D(sp(f)) : null); CXY = P.countries.map(([, lon, lat]) => vis(lon, lat) ? proj([lon, lat]) : null);
 }
 const D2R = Math.PI / 180;
