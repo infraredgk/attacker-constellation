@@ -1,5 +1,5 @@
 // 一度開いたら、電波が悪くても再生できるように取っておく（2026-10-13）。ページと pub.json は新しい版を先に、つながらなければ取っておいたもの
-const C = "ac-v3";
+const C = "ac-v4";
 self.addEventListener("install", e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "pub.json", "countries-110m.json", "icon-192.png"])).catch(() => {})); });
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener("fetch", e => {
