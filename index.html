@@ -121,12 +121,12 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
   <div class="ends"><span id="mFirst"></span><span data-t="hourly">HOURLY ACTIVITY</span><span id="mLast"></span></div></div></div>
 <div class="tools"><button type="button" id="bHelp" aria-label="読み方 / How to read">?</button><button type="button" id="bQr">QR</button></div>
 <div class="panel" id="pHelp" hidden><div class="box" role="dialog" aria-labelledby="hHelp"><h3 id="hHelp" data-t="h_help">この地図の読み方</h3><ul>
-  <li><i style="background:var(--probe);color:var(--probe)"></i><span data-t="l_flow">光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・攻撃の手口・SQL インジェクション・Web シェル）</span></li>
+  <li><i style="background:var(--probe);color:var(--probe)"></i><span data-t="l_flow">光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・脆弱性を悪用する攻撃〔XSS・パストラバーサル・コマンドの実行など〕・SQL インジェクション・Web シェル）</span></li>
   <li><i style="background:var(--bot);color:var(--bot)"></i><span data-t="l_bot">青い流れと BOT STORM = 多くの国から一度に来たボット（国旗は来た国）</span></li>
   <li><i style="background:#a0c3ff;color:#a0c3ff"></i><span data-t="l_glow">光る国・光の柱 = その国から送られた量（相対）</span></li>
   <li><i class="ln" style="width:1.2em;height:2px;border-radius:1px;background:linear-gradient(90deg,#5eead4,#a78bfa,#facc15)"></i><span data-t="l_group">線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）</span></li>
   <li><i class="ln" style="width:1.2em;height:2px;border-radius:1px;background:#f4f7ff"></i><span data-t="l_net">白い線でつないだ点 = 同じ 1 分に一斉に来た送信元の集まり（ボットネットの疑い）</span></li>
-  <li><i style="background:#dfe7f4;color:#dfe7f4"></i><span data-t="l_graph">右下のグラフ = 1 時間ごとの増減。下のバーで日付を動かせる</span></li>
+  <li><i style="background:#dfe7f4;color:#dfe7f4"></i><span data-t="l_graph">右下のグラフ = 1 時間ごとの増減（色は種類の割合・青い影はボット）。下のバーで日付を動かせる</span></li>
   <li><i style="background:var(--violet);color:var(--violet)"></i><span data-t="l_news">NEWS = 国内で公表・報道されたインシデント（押すと一覧）</span></li></ul>
   <p class="fine" data-t="l_anon">1 年分を 1 日 1 秒で再生。位置は 2 度の格子、時刻はずらし、件数・サイト名は出していない。</p>
   <p class="by"><a href="https://lp.mitsukeru.io/" target="_blank" rel="noopener" id="aBy" data-t="by">ミツケル（MITSUKERU）の解析で作りました ↗</a></p>
@@ -143,18 +143,18 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
 (() => {
   const URL0 = "https://infraredgk.github.io/attacker-constellation/";
   const T = {
-    ja: { probe: "探索", exploit: "攻撃の手口", sqli: "SQLi", shell: "Web シェル", bot: "ボット", group: "攻撃グループ", net: "ボットネット", hourly: "1 時間ごとの増減",
-          h_help: "この地図の読み方", l_flow: "光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・攻撃の手口・SQL インジェクション・Web シェル）",
+    ja: { probe: "探索", exploit: "脆弱性の悪用", sqli: "SQLi", shell: "Web シェル", bot: "ボット", group: "攻撃グループ", net: "ボットネット", hourly: "1 時間ごとの増減",
+          h_help: "この地図の読み方", l_flow: "光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・脆弱性を悪用する攻撃〔XSS・パストラバーサル・コマンドの実行など〕・SQL インジェクション・Web シェル）",
           l_bot: "青い流れと BOT STORM = 多くの国から一度に来たボット（国旗は来た国）", l_glow: "光る国・光の柱 = その国から送られた量（相対）",
-          l_group: "線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）", l_graph: "右下のグラフ = 1 時間ごとの増減。下のバーで日付を動かせる",
+          l_group: "線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）", l_graph: "右下のグラフ = 1 時間ごとの増減（色は種類の割合・青い影はボット）。下のバーで日付を動かせる",
           l_net: "白い線でつないだ点 = 同じ 1 分に一斉に来た送信元の集まり（ボットネットの疑い）", l_news: "NEWS = 国内で公表・報道されたインシデント（押すと一覧）",
           h_news: "国内のインシデント", news_note: "国内で公表・報道されたインシデント。地図の攻撃との関係を示すものではありません。日付を押すとその時点から再生します。",
           l_anon: "1 年分を 1 日 1 秒で再生。位置は 2 度の格子、時刻はずらし（ボットの急増は同じ月の中で置き直し）、件数・サイト名は出していない。", by: "ミツケル（MITSUKERU）の解析で作りました ↗",
           h_qr: "この画面を QR で", share: "共有", close: "閉じる", lang: "English" },
     en: { probe: "Probe", exploit: "Exploit", sqli: "SQLi", shell: "Web shell", bot: "Bot", group: "Attack group", net: "Botnet", hourly: "HOURLY ACTIVITY",
-          h_help: "How to read this map", l_flow: "Streams of light = probes and attacks from sources worldwide to sites in Japan. Color = type (probe, exploit, SQL injection, web shell)",
+          h_help: "How to read this map", l_flow: "Streams of light = probes and attacks from sources worldwide to sites in Japan. Color = type (probe, vulnerability exploit such as XSS, path traversal or command execution, SQL injection, web shell)",
           l_bot: "Blue streams and BOT STORM = bots arriving from many countries at once (flags = their countries)", l_glow: "Glowing countries and pillars = relative volume sent from that country",
-          l_group: "Linked dots = sources that probed alike (estimated groups)", l_graph: "Bottom-right graph = hourly activity. Drag the bar below it to move through time",
+          l_group: "Linked dots = sources that probed alike (estimated groups)", l_graph: "Bottom-right graph = hourly activity (colors = share of each type, blue shade = bots). Drag the bar below it to move through time",
           l_net: "White-linked dots = sources that arrived together within the same minute (suspected botnet)", l_news: "NEWS = incidents publicly reported in Japan (tap for the list)",
           h_news: "Incidents in Japan", news_note: "Incidents publicly reported in Japan (headlines in Japanese). They are not linked to the attacks on the map. Tap a date to replay from that point.",
           l_anon: "A year replayed at one day per second. Positions are rounded to a 2° grid, times are shifted, and no counts or site names are shown.", by: "Built with MITSUKERU analysis ↗",
@@ -450,9 +450,19 @@ function drawGraph(h) {   // 直近 21 日の 1 時間ごとの増減（相対�
   gctx.fillStyle = "rgba(76,201,240,.35)"; gctx.beginPath(); gctx.moveTo(0, hh);
   for (let i = 0; i < N; i++) { const v = x0 + i >= 0 ? P.bot[x0 + i] / 255 : 0; gctx.lineTo(i / (N - 1) * w, hh - v * hh * .95); }
   gctx.lineTo(w, hh); gctx.closePath(); gctx.fill();
-  gctx.strokeStyle = "rgba(223,231,244,.85)"; gctx.lineWidth = 1.2; gctx.beginPath();
-  for (let i = 0; i < N; i++) { const v = x0 + i >= 0 ? Math.sqrt(P.atk[x0 + i] / 255) : 0, x = i / (N - 1) * w, y = hh - v * hh * .95; i ? gctx.lineTo(x, y) : gctx.moveTo(x, y); }
-  gctx.stroke();
+  if (P.atk_s) {   // 攻撃の高さを種類の割合で色分け（下から 探索・脆弱性の悪用・Web シェル・SQLi。SQLi は少ないので一番上で見えるように）
+    const cw = w / N + .6;
+    for (let i = 0; i < N; i++) {
+      const hh2 = x0 + i; if (hh2 < 0) continue;
+      const tot = Math.sqrt(P.atk[hh2] / 255) * hh * .95; if (tot <= 0) continue;
+      let y = hh; const x = i / (N - 1) * w;
+      for (const k of [0, 1, 2, 3]) { const d = tot * P.atk_s[k][hh2] / 255; if (d <= 0) continue; const c = COL[k]; gctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},.85)`; gctx.fillRect(x, y - d, cw, d); y -= d; }
+    }
+  } else {
+    gctx.strokeStyle = "rgba(223,231,244,.85)"; gctx.lineWidth = 1.2; gctx.beginPath();
+    for (let i = 0; i < N; i++) { const v = x0 + i >= 0 ? Math.sqrt(P.atk[x0 + i] / 255) : 0, x = i / (N - 1) * w, y = hh - v * hh * .95; i ? gctx.lineTo(x, y) : gctx.moveTo(x, y); }
+    gctx.stroke();
+  }
   gctx.fillStyle = "#fff"; const ve = Math.sqrt(P.atk[h] / 255); gctx.beginPath(); gctx.arc(w - 2, hh - ve * hh * .95, 2.5, 0, 6.283); gctx.fill();
 }
 function frame(now) {
