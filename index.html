@@ -47,7 +47,23 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
 .legend span { display: inline-flex; align-items: center; gap: .5em; white-space: nowrap; }
 .legend i.ln { width: 1.4em; height: 2px; border-radius: 1px; background: linear-gradient(90deg, #5eead4, #a78bfa, #facc15); box-shadow: none; }
 .legend i { width: .62em; height: .62em; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px currentColor; }
-.graph { position: fixed; right: clamp(16px, 1.6vw, 40px); bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(14px, 1.6vw, 40px)); width: clamp(220px, 24vw, 700px); pointer-events: none; }
+/* 右下の欄: NEWS（国内のインシデント）・1 時間ごとの増減・日付を動かすバー（2026-11-17 toshi「日付を変更できるバー」「国内のインシデントが NEWS として流れる」「携帯でうるさくない」）*/
+.dock { position: fixed; right: clamp(16px, 1.6vw, 40px); bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(14px, 1.6vw, 40px)); width: clamp(220px, 24vw, 700px); pointer-events: none; display: flex; flex-direction: column; gap: .5em; }
+.news { pointer-events: auto; display: block; width: 100%; text-align: right; font: inherit; color: var(--fg); background: none; border: 0; padding: 0; cursor: pointer; opacity: 0; transition: opacity .8s ease; font-size: clamp(.68rem, .82vw, 1.05rem); line-height: 1.5; text-shadow: 0 1px 10px var(--bg); }
+.news.on { opacity: .92; } .news.dim { opacity: .4; }
+.news .nk { font-family: var(--font-display); color: var(--violet); letter-spacing: .14em; margin-right: .6em; font-size: .86em; }
+.news .nd { font-family: var(--font-display); color: var(--muted); margin-right: .6em; font-size: .86em; font-variant-numeric: tabular-nums; }
+.news .nt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.graph { pointer-events: none; }
+#seek { pointer-events: auto; display: block; width: 100%; height: 26px; margin: .2em 0 0; accent-color: var(--violet); background: transparent; cursor: pointer; }
+.graph .ends { display: flex; justify-content: space-between; gap: 1em; font-family: var(--font-display); }
+.panel .newsbox { max-width: 40rem; }
+.newslist { list-style: none; margin: .4em 0 0; padding: 0; max-height: min(62vh, 36rem); overflow-y: auto; display: grid; gap: 0; }
+.panel .newslist li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .6em; align-items: baseline; border-top: 1px solid var(--edge); padding: .5em 0; }
+.panel .newslist button { font: inherit; font-size: inherit; text-align: left; color: var(--fg); background: none; border: 0; padding: 0; cursor: pointer; min-height: 0; border-radius: 0; letter-spacing: 0; font-family: var(--font-body); }
+.newslist time { display: block; font-family: var(--font-display); color: var(--muted); font-size: .82em; font-variant-numeric: tabular-nums; }
+.newslist .org { color: var(--violet); margin-right: .4em; }
+.newslist a { color: var(--muted); text-decoration: none; padding: .2em .3em; }
 .graph canvas { display: block; width: 100%; height: clamp(54px, 7vh, 140px); }
 .graph div { font-size: clamp(.55rem, .7vw, .95rem); color: var(--muted); letter-spacing: .08em; margin-top: .4em; text-align: right; }
 .cap { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(16px, 2vw, 48px)); transform: translateX(-50%); width: min(36vw, 1000px); text-align: center; pointer-events: none;
@@ -85,9 +101,10 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
   .brand { left: 0; right: 0; text-align: center; top: calc(env(safe-area-inset-top, 0px) + 22px); }
   .brand h1 { font-size: clamp(1rem, 5.4vw, 2.4rem); letter-spacing: .18em; } .brand time { font-size: clamp(1.3rem, 7vw, 2.6rem); margin-top: .35em; } .brand p { font-size: clamp(.55rem, 2.4vw, 1rem); letter-spacing: .36em; }
   .legend { top: auto; left: 16px; right: 16px; max-width: none; justify-content: center; gap: 1em; font-size: clamp(.62rem, 2.8vw, 1rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
-  .graph { left: 16px; right: 16px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); } .graph canvas { height: clamp(44px, 7vh, 110px); }
+  .dock { left: 16px; right: 16px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 86px); gap: .3em; } .graph canvas { height: clamp(36px, 5.5vh, 90px); }
+  .news { text-align: center; font-size: clamp(.66rem, 3vw, .95rem); } .news .nt { -webkit-line-clamp: 1; }   /* 携帯は 1 行だけ・全文は NEWS の一覧で */
   .tools { top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; right: 10px; justify-content: space-between; pointer-events: none; } .tools button { pointer-events: auto; min-width: 40px; }   /* 題の左右の上の角（下は BOT STORM のテロップと重なった）*/
-  .cap { width: calc(100vw - 32px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18vh); }
+  .cap { width: calc(100vw - 32px); bottom: calc(env(safe-area-inset-bottom, 0px) + max(18vh, 210px)); }
   .cap b { font-size: clamp(1.2rem, 6.5vw, 2.4rem); }
   .intro h2 { font-size: clamp(1.1rem, 6vw, 3rem); letter-spacing: .6em; white-space: normal; } .intro.on h2 { letter-spacing: .2em; }
 }
@@ -97,20 +114,27 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
 <body>
 <div id="stage"><canvas id="base" aria-hidden="true"></canvas><canvas id="glow" aria-hidden="true"></canvas><canvas id="fx" role="img" aria-label="世界の攻撃元から日本へ向かう攻撃とボットの流れ"></canvas></div>
 <header class="brand"><h1>ATTACKER CONSTELLATION</h1><p>HIGH DENSITY INTELLIGENCE</p><time id="mon"></time></header>
-<div class="legend"><span style="color:var(--probe)"><i style="background:var(--probe)"></i><b data-t="probe">Probe</b></span><span style="color:var(--exploit)"><i style="background:var(--exploit)"></i><b data-t="exploit">Exploit</b></span><span style="color:var(--sqli)"><i style="background:var(--sqli)"></i><b data-t="sqli">SQLi</b></span><span style="color:var(--shell)"><i style="background:var(--shell)"></i><b data-t="shell">Web shell</b></span><span style="color:var(--bot)"><i style="background:var(--bot)"></i><b data-t="bot">Bot</b></span><span style="color:var(--fg)"><i class="ln"></i><b data-t="group">Attack group</b></span></div>
-<div class="graph"><canvas id="g" aria-hidden="true"></canvas><div data-t="hourly">HOURLY ACTIVITY</div></div>
+<div class="legend"><span style="color:var(--probe)"><i style="background:var(--probe)"></i><b data-t="probe">Probe</b></span><span style="color:var(--exploit)"><i style="background:var(--exploit)"></i><b data-t="exploit">Exploit</b></span><span style="color:var(--sqli)"><i style="background:var(--sqli)"></i><b data-t="sqli">SQLi</b></span><span style="color:var(--shell)"><i style="background:var(--shell)"></i><b data-t="shell">Web shell</b></span><span style="color:var(--bot)"><i style="background:var(--bot)"></i><b data-t="bot">Bot</b></span><span style="color:var(--fg)"><i class="ln"></i><b data-t="group">Attack group</b></span><span style="color:var(--fg)"><i class="ln" style="background:#f4f7ff"></i><b data-t="net">Botnet</b></span></div>
+<div class="dock"><button type="button" class="news" id="news" hidden><span class="nk">NEWS</span><span class="nd" id="newsD"></span><span class="nt" id="newsT"></span></button>
+  <div class="graph"><canvas id="g" aria-hidden="true"></canvas><input type="range" id="seek" min="0" max="1" step="1" value="0" aria-label="日付を動かす / Move through time">
+  <div class="ends"><span id="mFirst"></span><span data-t="hourly">HOURLY ACTIVITY</span><span id="mLast"></span></div></div></div>
 <div class="tools"><button type="button" id="bHelp" aria-label="読み方 / How to read">?</button><button type="button" id="bQr">QR</button></div>
 <div class="panel" id="pHelp" hidden><div class="box" role="dialog" aria-labelledby="hHelp"><h3 id="hHelp" data-t="h_help">この地図の読み方</h3><ul>
   <li><i style="background:var(--probe);color:var(--probe)"></i><span data-t="l_flow">光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・攻撃の手口・SQL インジェクション・Web シェル）</span></li>
   <li><i style="background:var(--bot);color:var(--bot)"></i><span data-t="l_bot">青い流れと BOT STORM = 多くの国から一度に来たボット（国旗は来た国）</span></li>
   <li><i style="background:#a0c3ff;color:#a0c3ff"></i><span data-t="l_glow">光る国・光の柱 = その国から送られた量（相対）</span></li>
   <li><i class="ln" style="width:1.2em;height:2px;border-radius:1px;background:linear-gradient(90deg,#5eead4,#a78bfa,#facc15)"></i><span data-t="l_group">線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）</span></li>
-  <li><i style="background:#dfe7f4;color:#dfe7f4"></i><span data-t="l_graph">右下のグラフ = 1 時間ごとの増減</span></li></ul>
+  <li><i class="ln" style="width:1.2em;height:2px;border-radius:1px;background:#f4f7ff"></i><span data-t="l_net">白い線でつないだ点 = 同じ 1 分に一斉に来た送信元の集まり（ボットネットの疑い）</span></li>
+  <li><i style="background:#dfe7f4;color:#dfe7f4"></i><span data-t="l_graph">右下のグラフ = 1 時間ごとの増減。下のバーで日付を動かせる</span></li>
+  <li><i style="background:var(--violet);color:var(--violet)"></i><span data-t="l_news">NEWS = 国内で公表・報道されたインシデント（押すと一覧）</span></li></ul>
   <p class="fine" data-t="l_anon">1 年分を 1 日 1 秒で再生。位置は 2 度の格子、時刻はずらし、件数・サイト名は出していない。</p>
   <p class="by"><a href="https://lp.mitsukeru.io/" target="_blank" rel="noopener" id="aBy" data-t="by">ミツケル（MITSUKERU）の解析で作りました ↗</a></p>
   <div class="row"><button type="button" id="bLang">English</button><button type="button" data-close data-t="close">閉じる</button></div></div></div>
 <div class="panel" id="pQr" hidden><div class="box qrbox" role="dialog" aria-labelledby="hQr"><h3 id="hQr" data-t="h_qr">この画面を QR で</h3><div id="qrSvg"><svg viewBox="0 0 296 296" role="img" aria-label="QR code" xmlns="http://www.w3.org/2000/svg" width="296" height="296" class="segno"><g transform="scale(8)"><path fill="#fff" d="M0 0h37v37h-37z"/><path class="qrline" stroke="#050913" d="M2 2.5h7m2 0h1m2 0h4m1 0h1m1 0h1m1 0h1m1 0h1m2 0h7m-33 1h1m5 0h1m3 0h1m1 0h4m2 0h1m1 0h2m1 0h2m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m1 0h1m1 0h1m1 0h1m4 0h3m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m1 0h2m5 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h2m1 0h6m1 0h2m4 0h1m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-23 1h1m3 0h4m1 0h6m-25 1h1m2 0h1m1 0h2m1 0h2m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-28 1h2m2 0h2m3 0h1m2 0h3m2 0h1m2 0h1m3 0h4m3 0h2m-33 1h2m2 0h8m1 0h2m1 0h4m2 0h1m1 0h5m1 0h1m1 0h1m-30 1h1m1 0h1m1 0h1m2 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m4 0h2m2 0h1m-33 1h1m2 0h2m1 0h4m2 0h1m1 0h5m1 0h2m2 0h3m2 0h1m2 0h1m-33 1h1m1 0h1m4 0h3m2 0h1m1 0h2m2 0h2m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m-30 1h1m1 0h3m3 0h3m1 0h4m4 0h6m2 0h1m-28 1h1m3 0h1m1 0h2m1 0h1m2 0h2m2 0h5m1 0h1m1 0h1m2 0h1m-32 1h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m2 0h3m3 0h1m1 0h1m2 0h1m-32 1h1m1 0h1m4 0h3m2 0h1m1 0h1m1 0h3m2 0h1m1 0h3m1 0h1m1 0h1m1 0h1m-32 1h5m1 0h1m1 0h2m1 0h2m7 0h1m1 0h1m1 0h2m4 0h3m-33 1h1m2 0h1m1 0h1m1 0h3m2 0h2m1 0h7m2 0h4m-27 1h3m1 0h2m2 0h1m3 0h4m2 0h1m1 0h1m1 0h1m1 0h1m5 0h1m-30 1h3m3 0h1m1 0h4m1 0h1m1 0h2m1 0h3m1 0h4m1 0h4m-33 1h2m3 0h5m9 0h1m2 0h1m2 0h1m2 0h2m2 0h1m-32 1h1m1 0h3m2 0h1m1 0h1m1 0h4m2 0h1m2 0h1m1 0h1m2 0h2m1 0h1m2 0h1m-33 1h1m1 0h1m1 0h1m1 0h3m1 0h2m1 0h1m2 0h2m1 0h3m2 0h5m-21 1h3m3 0h1m2 0h1m1 0h1m1 0h4m3 0h2m1 0h2m-33 1h7m2 0h1m1 0h1m1 0h1m2 0h3m1 0h1m3 0h1m1 0h1m1 0h4m-32 1h1m5 0h1m1 0h1m1 0h1m3 0h1m1 0h3m2 0h1m2 0h1m3 0h1m2 0h1m-32 1h1m1 0h3m1 0h1m5 0h1m1 0h2m1 0h1m2 0h3m1 0h6m2 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m2 0h2m2 0h1m2 0h1m2 0h1m2 0h1m1 0h1m1 0h2m-30 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h3m2 0h1m1 0h1m4 0h3m1 0h1m-33 1h1m5 0h1m5 0h1m3 0h2m3 0h1m2 0h3m-27 1h7m1 0h1m2 0h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h1m1 0h1m1 0h1m2 0h1"/></g></svg></div><div class="url" id="qrUrl"></div>
   <div class="row" style="justify-content:center"><button type="button" id="bShare" hidden data-t="share">共有</button><button type="button" data-close data-t="close">閉じる</button></div></div></div>
+<div class="panel" id="pNews" hidden><div class="box newsbox" role="dialog" aria-labelledby="hNews"><h3 id="hNews" data-t="h_news">国内のインシデント</h3>
+  <p class="fine" data-t="news_note" style="margin-top:0">国内で公表・報道されたインシデント。地図の攻撃との関係を示すものではありません。日付を押すとその時点から再生します。</p>
+  <ol class="newslist" id="newsList"></ol><div class="row"><button type="button" data-close data-t="close">閉じる</button></div></div></div>
 <div class="intro" id="intro"><div><h2>ATTACKER CONSTELLATION</h2><p>HIGH DENSITY INTELLIGENCE</p></div></div>
 
 <script>
@@ -118,16 +142,20 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--fo
 (() => {
   const URL0 = "https://infraredgk.github.io/attacker-constellation/";
   const T = {
-    ja: { probe: "探索", exploit: "攻撃の手口", sqli: "SQLi", shell: "Web シェル", bot: "ボット", group: "攻撃グループ", hourly: "1 時間ごとの増減",
+    ja: { probe: "探索", exploit: "攻撃の手口", sqli: "SQLi", shell: "Web シェル", bot: "ボット", group: "攻撃グループ", net: "ボットネット", hourly: "1 時間ごとの増減",
           h_help: "この地図の読み方", l_flow: "光の流れ = 世界の攻撃元から日本のサイトへの探索・攻撃。色は種類（探索・攻撃の手口・SQL インジェクション・Web シェル）",
           l_bot: "青い流れと BOT STORM = 多くの国から一度に来たボット（国旗は来た国）", l_glow: "光る国・光の柱 = その国から送られた量（相対）",
-          l_group: "線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）", l_graph: "右下のグラフ = 1 時間ごとの増減",
-          l_anon: "1 年分を 1 日 1 秒で再生。位置は 2 度の格子、時刻はずらし、件数・サイト名は出していない。", by: "ミツケル（MITSUKERU）の解析で作りました ↗",
+          l_group: "線でつないだ点 = 似た探り方をした攻撃元の集まり（推定）", l_graph: "右下のグラフ = 1 時間ごとの増減。下のバーで日付を動かせる",
+          l_net: "白い線でつないだ点 = 同じ 1 分に一斉に来た送信元の集まり（ボットネットの疑い）", l_news: "NEWS = 国内で公表・報道されたインシデント（押すと一覧）",
+          h_news: "国内のインシデント", news_note: "国内で公表・報道されたインシデント。地図の攻撃との関係を示すものではありません。日付を押すとその時点から再生します。",
+          l_anon: "1 年分を 1 日 1 秒で再生。位置は 2 度の格子、時刻はずらし（ボットの急増は同じ月の中で置き直し）、件数・サイト名は出していない。", by: "ミツケル（MITSUKERU）の解析で作りました ↗",
           h_qr: "この画面を QR で", share: "共有", close: "閉じる", lang: "English" },
-    en: { probe: "Probe", exploit: "Exploit", sqli: "SQLi", shell: "Web shell", bot: "Bot", group: "Attack group", hourly: "HOURLY ACTIVITY",
+    en: { probe: "Probe", exploit: "Exploit", sqli: "SQLi", shell: "Web shell", bot: "Bot", group: "Attack group", net: "Botnet", hourly: "HOURLY ACTIVITY",
           h_help: "How to read this map", l_flow: "Streams of light = probes and attacks from sources worldwide to sites in Japan. Color = type (probe, exploit, SQL injection, web shell)",
           l_bot: "Blue streams and BOT STORM = bots arriving from many countries at once (flags = their countries)", l_glow: "Glowing countries and pillars = relative volume sent from that country",
-          l_group: "Linked dots = sources that probed alike (estimated groups)", l_graph: "Bottom-right graph = hourly activity",
+          l_group: "Linked dots = sources that probed alike (estimated groups)", l_graph: "Bottom-right graph = hourly activity. Drag the bar below it to move through time",
+          l_net: "White-linked dots = sources that arrived together within the same minute (suspected botnet)", l_news: "NEWS = incidents publicly reported in Japan (tap for the list)",
+          h_news: "Incidents in Japan", news_note: "Incidents publicly reported in Japan (headlines in Japanese). They are not linked to the attacks on the map. Tap a date to replay from that point.",
           l_anon: "A year replayed at one day per second. Positions are rounded to a 2° grid, times are shifted, and no counts or site names are shown.", by: "Built with MITSUKERU analysis ↗",
           h_qr: "Open this page by QR", share: "Share", close: "Close", lang: "日本語" } };
   let lang = "en"; try { lang = localStorage.getItem("ac-lang") || ((navigator.language || "").startsWith("ja") ? "ja" : "en"); } catch (e) { lang = (navigator.language || "").startsWith("ja") ? "ja" : "en"; }
@@ -182,6 +210,10 @@ const GR = P.groups || [], NG = GR.length, G_AT = Array.from({ length: H }, () =
 GR.forEach((g, k) => { for (let i = 0; i < g.a.length; i += 2) for (let h = g.a[i]; h < Math.min(H, g.a[i] + g.a[i + 1]); h++) G_AT[h].push(k); });
 const GPAL = [[94, 234, 212], [163, 230, 53], [250, 204, 21], [244, 114, 182], [167, 139, 250], [96, 165, 250], [251, 146, 60], [52, 211, 153]];
 let GXY = [], GPATH = [];
+// ボットネットの疑い（同じ 1 分に一斉に来た送信元）: 始まった時に白い線で結び、数秒で消す
+const NETS = P.nets || [], NET_AT = new Map(), NA = new Float32Array(NETS.length);
+NETS.forEach((n, k) => { if (!NET_AT.has(n.h)) NET_AT.set(n.h, []); NET_AT.get(n.h).push(k); });
+let NXY = [], NPATH = [];
 const BOTS = P.bots, BOT_AT = Array.from({ length: H }, () => []);
 BOTS.forEach((b, k) => { for (let o = 0; o < b.d; o++) if (b.s + o < H) BOT_AT[b.s + o].push([k, b.w[o]]); });
 const flag = c => String.fromCodePoint(...[...c].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65));
@@ -231,6 +263,8 @@ function reproject() {   // 投影が変わったとき（大きさ・地球儀�
   // 大円で結ぶ（地球儀の裏で切る）。平面の地図では、地図の端（太平洋が中心なので大西洋）をまたぐ線は描かない（アメリカと欧州を結ぶ線が画面の外へ出た・toshi 2026-10-13）。同じ色の点で同じ集まりと分かる
   const cross = (a, b) => { if (PORTRAIT) return false; const it = d3.geoInterpolate(a, b); let px = null; for (let k = 0; k <= 24; k++) { const q = proj(it(k / 24)); if (px !== null && Math.abs(q[0] - px) > W * .25) return true; px = q[0]; } return false; };
   const gpth = d3.geoPath(proj); GPATH = GR.map(g => new Path2D(gpth({ type: "MultiLineString", coordinates: g.e.filter(([i, j]) => !cross(g.p[i], g.p[j])).map(([i, j]) => [g.p[i], g.p[j]]) }) || ""));
+  NXY = NETS.map(g => g.p.map(q => vis(q[0], q[1]) ? proj(q) : null));
+  NPATH = NETS.map(g => new Path2D(gpth({ type: "MultiLineString", coordinates: g.e.filter(([i, j]) => !cross(g.p[i], g.p[j])).map(([i, j]) => [g.p[i], g.p[j]]) }) || ""));
   const sp = d3.geoPath(proj); CPATH = CFEAT.map(f => f ? new Path2D(sp(f)) : null); CXY = P.countries.map(([, lon, lat]) => vis(lon, lat) ? proj([lon, lat]) : null);
 }
 const D2R = Math.PI / 180;
@@ -273,6 +307,8 @@ function spawnHour(h) {
   }
   const b = BOT_AT[h].find(([k]) => BOTS[k].s === h || (capFor < 0 && h === hStart && BOTS[k].s < h));
   if (b) showCap(b[0]);
+  for (const k of NET_AT.get(h) || []) NA[k] = 1;
+  while (newsNext < NEWS.length && NEWS[newsNext][0] <= h) newsPend = newsNext++;
   GON.fill(0); G_AT[h].slice().sort((a, b) => GR[b].p.length - GR[a].p.length).slice(0, 8).forEach(k => GON[k] = 1);
   for (let c = 0; c < NCT; c++) ACT[c] *= DECAY;
   for (let i = CSTART[h]; i < CSTART[h + 1]; i++) ACT[CI[i]] += 2 ** (CL[i] - 1);
@@ -280,6 +316,35 @@ function spawnHour(h) {
   const mo = (P.months || []).filter(x => x[0] <= h).pop(); if (mo && monEl.textContent !== mo[1]) monEl.textContent = mo[1];
 }
 let hStart = 0; const monEl = document.getElementById("mon");
+const monOf = h => ((P.months || []).filter(x => x[0] <= h).pop() || ["", ""])[1];
+// NEWS（国内のインシデント）: 再生がその日を過ぎたら 1 件ずつ出す（2.6 秒より短い間隔では入れ替えない・多い月は新しいものを優先）
+const NEWS = P.news || [], newsEl = document.getElementById("news");
+let newsNext = 0, newsPend = null, newsAt = -1e9, newsTo = 0;
+function showNews(k) {
+  const [, d, org, t] = NEWS[k];
+  document.getElementById("newsD").textContent = d; document.getElementById("newsT").textContent = org ? `${org} — ${t}` : t;
+  newsEl.hidden = false; newsEl.dataset.k = k; newsEl.classList.remove("dim"); newsEl.classList.add("on");
+  clearTimeout(newsTo); newsTo = setTimeout(() => newsEl.classList.add("dim"), 9000);
+}
+{ const ol = document.getElementById("newsList"), esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  ol.innerHTML = NEWS.map((n, k) => [n, k]).reverse().map(([[h, d, org, t, src], k]) => `<li><button type="button" data-h="${h}" data-k="${k}"><time>${d}</time>${org ? `<span class="org">${esc(org)}</span>` : ""}${esc(t)}</button><a href="${esc(src)}" target="_blank" rel="noopener" aria-label="source">↗</a></li>`).join("");
+  ol.addEventListener("click", e => { const b = e.target.closest("button[data-h]"); if (!b) return; document.getElementById("pNews").hidden = true; seek(+b.dataset.h - 36); track("news-seek", 1); });
+  newsEl.addEventListener("click", () => { const pn = document.getElementById("pNews"); pn.hidden = false; const li = ol.querySelector(`button[data-k="${newsEl.dataset.k}"]`); if (li) li.scrollIntoView({ block: "center" }); track("news-list", 1); });
+  if (!NEWS.length) newsEl.remove(); }
+// 日付を動かすバー: 動かした時点から再生しなおす（表示は月だけ）
+const seekEl = document.getElementById("seek"); seekEl.max = H - 1;
+document.getElementById("mFirst").textContent = monOf(0); document.getElementById("mLast").textContent = monOf(H - 1);
+let seeking = false, seekShown = -1;
+function seek(h) {
+  h = Math.max(0, Math.min(H - 1, Math.round(h)));
+  meteors = []; sparks = []; capFor = -1; document.querySelectorAll(".cap").forEach(e => e.remove());
+  ACT.fill(0); for (let x = Math.max(0, h - 60); x < h; x++) { for (let c = 0; c < NCT; c++) ACT[c] *= DECAY; for (let i = CSTART[x]; i < CSTART[x + 1]; i++) ACT[CI[i]] += 2 ** (CL[i] - 1); }
+  NA.fill(0); GON.fill(0); hStart = h; hCur = h - 1; tAcc = 0; hold = 0;
+  newsNext = 0; while (newsNext < NEWS.length && NEWS[newsNext][0] < h - 72) newsNext++; newsPend = null;   // 直前 3 日のものから出す
+  monEl.textContent = monOf(h); seekEl.value = h; seekShown = h; drawGraph(h);
+}
+seekEl.addEventListener("input", () => { seeking = true; seek(+seekEl.value); });
+seekEl.addEventListener("change", () => { seeking = false; track("seek", 1); });
 // 計測（公開版だけ GoatCounter を読む。無ければ何もしない）: 操作の回数だけ。誰が見たかは送らない
 const sent = new Set(), track = (n, once) => { if (once && sent.has(n)) return; sent.add(n); try { window.goatcounter?.count?.({ path: n, title: n, event: true }); } catch (e) {} };
 setTimeout(() => document.visibilityState === "visible" && track("watch-60s", 1), 60000);
@@ -361,6 +426,12 @@ function drawCountries(dt) {   // 国の光（送信の強さ）と首都の光�
     lctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(.95 * a).toFixed(3)})`;
     lctx.beginPath(); for (const p of xy) if (p) lctx.rect(p[0] - 2, p[1] - 2, 4, 4); lctx.fill();
   }
+  for (let k = 0; k < NETS.length; k++) {   // ボットネットの疑い（白・半減 1.2 秒）
+    const a = NA[k]; if (a < .02) { NA[k] = 0; continue; }
+    for (const [w, al] of [[3.6, .14], [1.2, .75]]) { lctx.strokeStyle = `rgba(244,247,255,${(al * a).toFixed(3)})`; lctx.lineWidth = w; lctx.stroke(NPATH[k]); }
+    lctx.fillStyle = `rgba(255,255,255,${(.95 * a).toFixed(3)})`; lctx.beginPath(); for (const p of NXY[k]) if (p) lctx.rect(p[0] - 1.8, p[1] - 1.8, 3.6, 3.6); lctx.fill();
+    NA[k] = a * Math.pow(.5, dt / 1.2);
+  }
   lctx.globalCompositeOperation = "source-over";
 }
 function drawGraph(h) {   // 直近 21 日の 1 時間ごとの増減（相対値・目盛りなし）
@@ -381,6 +452,8 @@ function frame(now) {
     while (tAcc >= HOUR_MS && hCur < H - 1) { tAcc -= HOUR_MS; hCur++; spawnHour(hCur); }
     if (hCur >= H - 1 && (hold += dt) > 2.5) { track("loop-complete"); restart(false); }
     if (hCur >= 0) drawGraph(hCur);
+    if (!seeking && Math.abs(hCur - seekShown) >= 6) { seekEl.value = hCur; seekShown = hCur; }
+    if (newsPend !== null && now - newsAt > 2600) { showNews(newsPend); newsPend = null; newsAt = now; }
   }
   if (Math.abs(spin[0]) + Math.abs(spin[1]) > .002 && !drag) { ROT = [ROT[0] + spin[0] * dt * 1000, Math.max(-85, Math.min(85, ROT[1] + spin[1] * dt * 1000))]; spin = spin.map(v => v * Math.pow(.05, dt)); dirty = true; }
   if (dirty && PORTRAIT) { dirty = false; reproject(); }
@@ -394,7 +467,7 @@ function playIntro(full, done) {
   setTimeout(() => { intro.classList.add("out"); done(); }, full ? 4200 : 3000);
 }
 function restart(full) {
-  paused = true; hold = 0; meteors = []; sparks = []; ACT.fill(0); GON.fill(0); GA.fill(0); capFor = -1; document.querySelectorAll(".cap").forEach(e => e.remove());
+  paused = true; hold = 0; meteors = []; sparks = []; ACT.fill(0); GON.fill(0); GA.fill(0); NA.fill(0); newsNext = 0; newsPend = null; capFor = -1; document.querySelectorAll(".cap").forEach(e => e.remove());
   const m = full && /^#h(\d+)$/.exec(location.hash);   // 確認用: #h<時> からはじめる
   playIntro(full, () => { hStart = m ? Math.min(H - 1, +m[1]) : 0; hCur = hStart - 1; tAcc = 0; paused = false; });
 }
